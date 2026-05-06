@@ -1,0 +1,44 @@
+\section{Linear Probe Training Details}
+\label{app:training}
+
+\input{figure/probe_f1}
+\para{Optimisation.} AdamW, learning rate $10^{-3}$, weight decay $10^{-2}$, batch size $256$, $50$ epochs, gradient norm clipped at $5.0$. Probes are trained from random initialisation for every (task, layer) pair. Cross-entropy loss is unweighted; class imbalance is handled by reporting macro-F1 alongside accuracy.
+
+\para{Data and split.} $1000$ SMILES are sampled uniformly at random from the QM9 training split (seed $42$). After RDKit parsing and atom-token alignment, approximately $980$ molecules and $\sim 8.6$k atom-token positions remain. We use a molecule-level $80/20$ split, so that no atom from a held-out molecule appears in training; this yields $\sim 6.9$k training and $\sim 1.7$k test atom-token positions. Class sets are fit on training labels only; held-out atoms whose label does not appear in training count as misclassifications and are excluded from macro-F1.
+
+\para{Per-atom hidden-state extraction.} For each SMILES we run a forward pass with $\texttt{output\_hidden\_states=True}$, parse the molecule with RDKit, and align tokenizer-level atom tokens with their corresponding RDKit atom indices via a deterministic walk through the regex tokenization. Token-to-atom alignment is verified by checking that each atom-token's element symbol matches the corresponding RDKit atom; mismatched molecules are dropped. Each per-atom vector $\mathbf{h}^{(i)}_{\tau, l} \in \mathbb{R}^{d}$ at layer $l$ is then taken from the $i$-th atom-token row of the layer-$l$ hidden-states tensor.
+
+\para{Standardisation.} For each (task, layer) pair, per-feature mean $\boldsymbol{\mu}_{\tau, l}$ and standard deviation $\boldsymbol{\sigma}_{\tau, l}$ are computed on the training atom-token positions only and applied as $\tilde{\mathbf{h}} = (\mathbf{h} - \boldsymbol{\mu}_{\tau, l}) / (\boldsymbol{\sigma}_{\tau, l} + 10^{-8})$ to both train and test. The $10^{-8}$ term avoids division by zero on near-constant features.
+
+\para{Reproducibility shims.} Loading MoLFormer requires three monkey-patches against the cached HuggingFace custom code, since the public release predates \texttt{transformers}~$\geq$~5: a stub for the removed \texttt{transformers.onnx} subpackage, a stub for \texttt{find\_pruneable\_heads\_and\_indices}, and a re-injection of \texttt{PreTrainedModel.get\_head\_mask}. We also force a recomputation of the rotary embedding's non-persistent \texttt{cos\_cached}/\texttt{sin\_cached} buffers after model loading and set \texttt{deterministic\_eval=True} on every FAVOR$+$ feature map. SMI-TED's \texttt{pytorch-fast-transformers} dependency does not build under the venv we used; we reimplement its encoder in pure PyTorch ($\sim 150$ lines) and load the released checkpoint into our own modules with a strict assertion that only the post-encoder \texttt{LayerNorm} (which our probes do not read) is allowed to be unmatched.
+
+\section{MLP Probe Control}
+\label{app:mlp}
+
+To rule out that the linear probe is bottlenecked by its lack of nonlinearity, we additionally train a 2-layer MLP probe with hidden size $128$ and ReLU activation:
+\[
+\mathrm{MLPProbe}(\mathbf{x}) = \mathbf{W}_2\,\mathrm{ReLU}(\mathbf{W}_1\,\mathbf{x} + \mathbf{b}_1) + \mathbf{b}_2,
+\]
+with $\mathbf{W}_1 \in \mathbb{R}^{128 \times 768}$ and $\mathbf{W}_2 \in \mathbb{R}^{C \times 128}$. Training hyperparameters mirror the linear probe (AdamW, $\mathrm{lr}{=}10^{-3}$, weight decay $10^{-2}$, batch size $256$, $50$ epochs, gradient clipping at $5.0$). The MLP probe and the linear probe see identical (task, layer) hidden states, splits, standardisation, and class encodings.
+
+Across all eight tasks and both models, the MLP probe improves test accuracy over the linear probe by at most $0.03$ in absolute terms, with most improvements being $\leq 0.01$. The largest gain is on MoLFormer hybridization ($+0.03$ acc / $+0.07$ macro-F1, layer $5$); on token-determined tasks the gap is essentially zero. We conclude that the chemical properties under study are approximately linearly accessible from the residual stream and that further conclusions drawn from the linear probe are not artifacts of probe capacity.
+
+\section{Random-Features Control}
+\label{app:random}
+
+For each (task, layer) pair we additionally train an identical linear probe on a Gaussian random-features matrix $\mathbf{X}_{\mathrm{rand}} \in \mathbb{R}^{N \times 768}$ with $\mathbf{X}_{\mathrm{rand}, ij} \sim \mathcal{N}(0, 1)$, sampled once per script run and reused for every (task, layer) random probe. The same molecule-level split, class encoding, and standardisation are applied; the probe sees the same atom labels but uninformative inputs. Test macro-F1 falls within $1$--$2$ percentage points of $1/C$ (the chance level for macro-F1 when always predicting the majority class) for every task on both models, confirming that the real-features probe accuracy reflects encoder structure rather than overfitting capacity in the linear head.
+
+\section{Causal Steering Implementation}
+\label{app:steering}
+
+\para{Steering vector.} For each (task, layer-$6$ probe) we form, in the original (unstandardised) hidden-state space,
+\[
+\mathbf{v}^{c \to c'} = (\mathbf{W}_{c'} - \mathbf{W}_{c}) / \boldsymbol{\sigma},
+\]
+where $\mathbf{W}_{c}$ is the probe's row for class $c$ and $\boldsymbol{\sigma}$ is the per-feature training standard deviation. Adding $\alpha \cdot \mathbf{v}^{c \to c'}$ to a hidden state increases the standardised logit difference $\mathrm{logit}_{c'} - \mathrm{logit}_{c}$ by $\alpha \cdot \|\mathbf{W}_{c'} - \mathbf{W}_c\|_{\boldsymbol{\sigma}^{-2}}^2$. For binary tasks, $\mathrm{tgt} = 1 - \mathrm{src}$. For multi-class tasks, we use a cycle target $\mathrm{tgt} = (\mathrm{src} + 1) \bmod C$.
+
+\para{Forward hook.} The hook is registered on \texttt{model.encoder.layer[5]}, modifies the layer's output tuple's first element by adding the per-position steering tensor, and is removed in a \texttt{try/finally} block immediately after the post-intervention forward pass. The pre- and post-intervention forward passes are run with \texttt{output\_hidden\_states=True} to capture the residual stream at every depth.
+
+\para{Metrics.} We report flip-to-target rate at the steer layer (must saturate at $1.0$ by construction; serves as a sanity check) and at the last layer (the propagation evidence), both as aggregate values and broken down by source class. The moved-off-source rate is reported alongside the flip-to-target rate to disentangle ``steering had effect'' from ``steering hit the intended target.''
+
+\para{Sample size.} Each task is evaluated on $200$ molecules ($\sim 1.7$k atoms) drawn from the QM9 partition not used for probe training.

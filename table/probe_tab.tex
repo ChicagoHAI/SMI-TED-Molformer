@@ -1,0 +1,20 @@
+\begin{table}[t]
+\centering
+\small
+\begin{tabular}{lcccc}
+\toprule
+Task   & \molm & \smi & Random \\
+\midrule
+atom type        & 1.00 & 1.00 & 0.24 \\
+is aromatic       & 1.00 & 1.00 & 0.48 \\
+is in ring        & \textbf{0.85} & \textbf{1.00} & 0.49 \\
+degree           & \textbf{0.62} & \textbf{0.99} & 0.24 \\
+hybridization    & \textbf{0.86} & \textbf{0.99} & 0.30 \\
+chiral tag      & 0.52 & 0.94 & 0.31 \\
+formal charge    & 0.83 & 1.00 & 0.33 \\
+total valence     & 0.96 & 1.00 & 0.23 \\
+\bottomrule
+\end{tabular}
+\caption{\textbf{Best-layer linear-probe macro-F1 per task.} The cross-model gap is largest on contextual structural properties (\textbf{bold}: ring membership, degree, hybridization), which cannot be derived from the SMILES token alone. Token-determined tasks (atom type, aromaticity) saturate for both models; chirality and formal charge are tokenizer-determined for \smi (bracket-atom vocabulary) but require contextual reconstruction by \molm. ``Majority F1'' is the macro-F1 of a constant predictor that always returns the majority class; ``Random'' is a linear probe trained on Gaussian features of the same shape.}
+\label{tab:probing-headline}
+\end{table}

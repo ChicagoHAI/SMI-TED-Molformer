@@ -1,0 +1,152 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Background}
+\label{sec:background}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\xiaoyan{Introduce those two models briefly, including their architecture, their training objective, and the downstream tasks they were applied. Both of the paper have some interp analysis, you can add short description about those analysis and why we are different too. SMI-TED analysis is in this paper: Foundation Models Enabling Multi-Scale Battery Materials Discovery. Also you should introduce the properties we are testing. Are those properties able to be read from the string? Explain the relationship between the property and the SMILES string. the following properties}
+% \paragraph{Chemical property labels.}
+Each atom is annotated with a set of chemically meaningful properties derived
+from RDKit:
+\begin{itemize}
+    \item atom type
+    \item hybridization
+    \item chiral tag 
+    \item degree
+    \item formal charge
+    \item total valence
+    \item aromaticity 
+    \item ring membership
+\end{itemize}
+
+\para{Chemistry foundational models.}
+
+\para{Chemical properties and SMILES string. }
+
+\section{Related Work}
+\para{Understand chemistry models.}
+
+\para{Interpretability for scientific foundation models.}
+% \subsection{SMILES as a Molecular Language}
+% \label{sec:smiles}
+
+% The Simplified Molecular-Input Line Entry System (SMILES) encodes a molecule as a
+% character string by performing a depth-first pre-order traversal of the molecular
+% graph, generating symbols for atoms, bonds, branching decisions, and ring closures. For example, ethanol is written as \texttt{CCO} and benzene is written
+% as \texttt{c1ccccc1}, where lowercase letters are used for aromatic atoms and digits indicate
+% ring closures. SMILES is widely adopted because it is compact relative to
+% graph representations and explicitly encodes meaningful substructures such as branches,
+% cyclic systems, and chirality. However, it does not directly encode 3D geometry or
+% interatomic distances, which are crucial for predicting quantum-mechanical properties.
+% A central question in chemical language modeling is therefore whether models trained
+% on SMILES alone can implicitly recover geometric information.
+
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \subsection{MoLFormer-XL}
+% \label{sec:molformer}
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% \subsubsection{Architecture}
+% \label{sec:molformer-arch}
+
+% MoLFormer-XL is an \emph{encoder-only} transformer with 12 layers,
+% 12 attention heads per layer, and a hidden dimension of 768, giving approximately
+% 47~million parameters in the encoder. It uses a vocabulary of 2{,}362 tokens
+% (2{,}357 unique SMILES tokens plus 5 special tokens), with a maximum sequence length of
+% 202 tokens (sufficient for 99.4\% of PubChem and ZINC molecules).
+
+% MoLFormer-XL uses rotary linear attention with a generalized random feature
+% map $\phi$:
+% \begin{equation*}
+% \small
+% \mathrm{Attention}_m(Q,K,V) =
+% \frac{\sum_{n=1}^{N} \langle \phi(R_m q_m),\, \phi(R_n k_n) \rangle v_n}
+%      {\sum_{n=1}^{N} \langle \phi(R_m q_m),\, \phi(R_n k_n) \rangle}
+% \end{equation*}
+% where $R_m$ denotes the rotary position matrix at position $m$.
+
+% After processing the sequence, the model produces a hidden representation $h_i$
+% for each token. A single molecular embedding is obtained via mean pooling:
+% \begin{equation*}
+%   h_{\mathrm{mol}} = \frac{1}{N} \sum_{i=1}^{N} h_i.
+% \end{equation*}
+% This mean pooled vector is used for downstream prediction tasks.
+
+% \paragraph{Implications for structure and geometry.}
+% Although SMILES does not explicitly encode three-dimensional structure, rotary
+% position encoding enables consistent relative-position representations, while
+% attention captures interactions between chemically related tokens. Together,
+% these mechanisms allow the model to implicitly encode aspects of spatial structure
+% and approximate interatomic relationships from sequence alone. \xiaoyan{We should highlight what they didn't do. They just did a brief correlation analysis. We can add the causality. }
+
+% \subsubsection{Training Data and Protocol}
+% \label{sec:molformer-training}
+
+% MoLFormer-XL is pretrained on \textbf{1.1 billion molecules}: 111~million from
+% PubChem and approximately 1~billion from ZINC, all canonicalised via RDKit.
+% Pretraining is performed using masked language modelling (MLM) in the BERT
+% tradition, with the objective of reconstructing the original SMILES string from
+% partially observed inputs. Specifically, 15\% of tokens in each sequence are selected
+% at random; of these, 80\% are replaced with the special \texttt{[MASK]} token,
+% 10\% are replaced with a random token, and 10\% are left unchanged. The model is
+% then trained to predict the original token at each selected position using the
+% surrounding context.
+
+% This training objective forces the model to learn the syntactic and semantic
+% structure of SMILES strings, including local bonding patterns, branching, and
+% long-range dependencies such as ring closures. Importantly, no explicit supervision
+% on molecular properties or geometric structure is provided during pretraining;
+% all learned representations arise from this token-level reconstruction task. 
+
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \subsection{SMI-TED$_{289\mathrm{M}}$}
+% \label{sec:smited}
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% \subsubsection{Architecture}
+% \label{sec:smited-arch}
+
+% SMI-TED$_{289\mathrm{M}}$ is a chemical foundation
+% model family with an \textit{encoder-decoder} architecture. The encoder is a
+% 12-layer, 12-head, 768-dimensional bidirectional transformer (47M parameters). SMI-TED$_{289\mathrm{M}}$
+% also uses rotary linear attention with a generalized random feature map $\phi$.
+
+% The decoder is a bottleneck
+% autoencoder (242M parameters) that compresses the full token embedding matrix into a
+% fixed-size molecular embedding and enables reconstruction of the original SMILES.
+
+% Formally, given token embeddings $x \in \mathbb{R}^{D \times L}$ (where $D = 202$
+% is the maximum token count and $L = 768$ is the embedding dimension), the encoder
+% produces a molecular latent vector $z \in \mathbb{R}^L$ via:
+% \begin{equation*}
+%   z = \bigl(\mathrm{LayerNorm}(\mathrm{GELU}(x W_1 + b_1))\bigr) W_2,
+%   \label{eq:smited-enc}
+% \end{equation*}
+% with $W_1 \in \mathbb{R}^{D \times L}$, $b_1 \in \mathbb{R}^L$,
+% $W_2 \in \mathbb{R}^{L \times L}$. The latent vector $z$ can be decoded back to
+% approximate token embeddings $\hat{x}$ via a symmetric linear-GELU-LayerNorm
+% projection, followed by a language model head that reconstructs individual tokens.
+
+% This \emph{invertible} latent space is the key structural difference from
+% MoLFormer-XL’s mean-pooled representation. The encoder--decoder architecture imposes
+% a reconstruction constraint: the latent vector $z$ must retain sufficient
+% information to recover the original SMILES sequence, rather than allowing
+% information to be discarded during pooling. This bottleneck encourages a compact
+% yet information-preserving representation that captures global molecular
+% structure. As a result, SMI-TED$_{289\mathrm{M}}$ learns more structured and compositional latent
+% embeddings, which are better suited for probing and interpretability analysis.
+
+% \subsubsection{Training Data and Protocol}
+% \label{sec:smited-training}
+
+% SMI-TED$_{289\mathrm{M}}$ is pretrained on \textbf{91 million} carefully curated molecules from
+% PubChem. 
+
+% \textbf{Phase 1} (95/5 split): The token encoder is pretrained on 95\% of the data
+% using MLM (same 15\%:80\%/10\%/10\% masking recipe as MoLFormer-XL). The remaining 5\%
+% is used for the encoder-decoder reconstruction loss. This separation is necessary
+% because unstable token embeddings in early epochs would otherwise destabilise decoder
+% training.
+
+% \textbf{Phase 2} (100\% data): Once the encoder has converged, both the MLM loss
+% (encoder) and the reconstruction loss (encoder-decoder) are jointly optimised on
+% the full dataset, improving decoder performance.

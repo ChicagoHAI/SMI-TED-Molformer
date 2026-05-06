@@ -1,0 +1,20 @@
+\begin{table}[t]
+\centering
+\small
+\begin{tabular}{lccc}
+\toprule
+Task & $C_\tau$ & \molm & \smi \\
+\midrule
+is aromatic   & 2 & 0.99 & 1.00 \\
+is in ring    & 2 & \textbf{0.76} & \textbf{1.00} \\
+chiral tag    & 3 & 0.44 & \textbf{1.00} \\
+degree        & 4 & 0.64 & \textbf{0.99} \\
+formal charge & 3 & 0.34 & \textbf{0.96} \\
+hybridization & 3 & 0.65 & 0.30 \\
+atom type     & 4 & 0.27 & 0.30 \\
+total valence & 4 & 0.41 & 0.27 \\
+\bottomrule
+\end{tabular}
+\caption{The success rate of a intervention at layer~$6$, read by the layer-$12$ probe. \smi maintains probe directions through the encoder substantially better than \molm.}
+\label{tab:steering-success}
+\end{table}

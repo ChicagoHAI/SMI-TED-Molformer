@@ -1,0 +1,52 @@
+\begin{figure*}[t]
+\centering
+\begin{subfigure}[t]{0.24\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{results_combined/atom_type.pdf}
+    \subcaption{atom type}
+\end{subfigure}\hfill
+\begin{subfigure}[t]{0.24\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{results_combined/hybridization.pdf}
+    \caption{hybridization}
+\end{subfigure}\hfill
+\begin{subfigure}[t]{0.24\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{results_combined/chiral_tag.pdf}
+    \caption{chiral tag}
+\end{subfigure}\hfill
+\begin{subfigure}[t]{0.24\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{results_combined/is_aromatic.pdf}
+    \caption{is aromatic}
+\end{subfigure}
+\vspace{0.6em}
+
+\begin{subfigure}[t]{0.24\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{results_combined/is_in_ring.pdf}
+    \caption{is in ring}
+\end{subfigure}\hfill
+\begin{subfigure}[t]{0.24\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{results_combined/degree.pdf}
+    \caption{degree}
+\end{subfigure}\hfill
+\begin{subfigure}[t]{0.24\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{results_combined/formal_charge.pdf}
+    \caption{formal charge}
+\end{subfigure}\hfill
+\begin{subfigure}[t]{0.24\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{results_combined/total_valence.pdf}
+    \caption{total valence}
+\end{subfigure}
+
+\vspace{0.4em}
+
+\centerline{\includegraphics[width=0.95\textwidth]{results_combined/legend.pdf}}
+
+\caption{Linear-probe test accuracy per layer for the eight per-atom RDKit properties on QM9. \smi encodes contextual properties (is in ring, degree, hybridization substantially more linearly than \molm, while token-determined properties (atom type, is aromatic) are trivially recovered by both.}
+\label{fig:acc}
+\end{figure*}

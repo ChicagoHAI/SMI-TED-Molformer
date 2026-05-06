@@ -1,0 +1,22 @@
+\section{Results}
+\label{sec:results}
+
+\subsection{Probe the chemical properties}
+\input{figure/probe_acc}
+\para{Atom type and aromaticity reflect tokenization, not learned representation.}
+Atom type and aromaticity reach perfect accuracy (macro-F1 $=1.0$) at the embedding layer and remain flat across depth. This is expected as the SMILES tokenizer assigns distinct token ids to different elements and encodes aromaticity via lowercase letters. These properties are therefore recoverable from the embedding lookup alone and reflect tokenizer design rather than learned representations. 
+
+\para{\smi learns contextual properties that \molm does not.}
+The clearest cross-model gap appears on ring membership, degree, and hybridization, which are the properties can not be directly determined by the SMILES token. \smi reaches macro-F1 $\geq 0.99$ by mid-layers on all three, while \molm plateaus at $0.85$, $0.62$, and $0.87$, respectively. The difference is most interpretable on ring membership, where identical \texttt{C} tokens can belong to ring or non-ring atoms, ruling out tokenizer effects. \xiaoyan{i am not sure about this sentence.}
+In some properties like hybridization, chiral tag, and degree, the accuracy of the probe in \molm is not highly above our random-feature probes collapse and majority-class performance. We also tested whether the properties are encoded non-linear, which is not the case. This indicates that \molm’s representations do not make these properties as cleanly accessible.
+
+Overall, \smi encodes these properties in a nearly linearly separable way, while \molm only partially does so. Given their similar architectures, this difference likely arises from pretraining, with \smi producing representations where structural properties are more accessible. This aligns with previous finding that \smi performs better than \molm in the downstream prediction tasks~\cite{soares2024smi, sharma2025foundation} \xiaoyan{Please double check the second one.}.
+
+% \subsection{Causality of the learned representations}
+\input{table/layer6_intervene}
+\para{Probe directions correspond to causal channels.}
+We test whether probe directions are causal by intervening on the residual stream of both \molm and \smi at layer~$6$ along the probe decision direction, and reading the same property's probe at layer~$12$. We choose layer~$6$ because the linear probe is already at or near peak accuracy there, while leaving six transformer blocks between intervention and readout for the perturbation to propagate through. For example, on ring membership, $76\%$ of atoms have their layer-$12$ prediction flipped to the target class on \molm and effectively all of them ($100\%$) on \smi. The probe identifies a direction the encoder actively maintains, rather than a passive correlation at one specific depth.
+
+\para{From correlation to causation.}
+Prior work attributes \smi's gains to improved data and training but does not explain how this affects representations~\cite{sharma2025foundation}. Our results go further by distinguishing correlation from causation. Linear probes show \smi encodes contextual properties more cleanly than \molm. Interventions show those directions are also maintained more robustly through the rest of the encoder. 
+This suggests a refined interpretation of the gap. \smi's advantage is not just higher linear-probe accuracy at any single layer, but a representation where structural properties are both cleanly organized as linear directions and causally used through the rest of the encoder. \molm encodes similar signals in a noisier form and they are partly undone by later computation, making the directions less directly usable downstream. Understanding this distinction helps explain why \smi performs better in practice.

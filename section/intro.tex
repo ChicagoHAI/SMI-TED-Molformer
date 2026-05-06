@@ -1,0 +1,28 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Introduction}
+\label{sec:intro}
+\xiaoyan{use para instead of paragragh.}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\xiaoyan{You can first introduce chemistry foundation model. And then add some literature about trying to understand those models and our motivation on trying to understand those models. In the end, you can provide a summary of our contribution. }
+Molecular property prediction is a crucial step in drug discovery and materials
+science. Traditional approaches rely on hand-crafted molecular fingerprints or graph
+neural networks that explicitly encode molecular structure.
+More recently, transformer-based language models pretrained on large corpora of
+SMILES strings have emerged as a powerful alternative, learning rich molecular
+representations without requiring explicit structural inductive biases.
+
+Despite impressive benchmark performance, the representational mechanisms of these
+models are not well understood. Do attention heads specialise for particular
+chemical substructures? Which layers encode atom-level chemical properties? To what
+extent does the learned representation reflect three-dimensional molecular geometry?
+These questions are important both for scientific understanding and for the
+trustworthy deployment of molecular AI in high-stakes domains. \xiaoyan{I think there are works about understanding the structures.}
+
+In this paper we conduct a systematic mechanistic interpretability study of two chemical language models, MoLFormer-XL and
+SMI-TED$_{289\mathrm{M}}$. We focus on three experiments: (1) correlation
+between per-head attention weights and 3D interatomic distances across all layers
+and heads; (2) linear probing for chemical atom properties at each encoder layer;
+and (3) attention head ablation; (4) PCA; (5) LDA
+
+\xiaoyan{we can highlight the main contributions here.}
+[MORE TO BE ADDED]

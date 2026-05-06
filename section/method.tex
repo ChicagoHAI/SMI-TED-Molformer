@@ -1,0 +1,184 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Methods}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Experiment 1: Attention--Distance Correlation}
+
+We test whether attention patterns reflect molecular geometry by comparing
+attention weights to 3D interatomic distances. For each SMILES string \textbf{(1000 random selected from QM9 dataset)}, we construct
+a 3D conformer using RDKit (ETKDG + optional MMFF optimization) and compute the
+pairwise Euclidean distance matrix $D$. We then form an inverse-distance matrix
+$D^{-1}$ to align with the intuition that stronger attention should correspond to
+closer atoms.
+
+We align SMILES tokens to heavy atoms using each model’s tokenizer, discarding
+non-atomic tokens. For each layer $\ell$ and head $h$, we extract an atom-level
+attention submatrix $A^{(\ell,h)} \in \mathbb{R}^{N \times N}$ and compare it to
+$D^{-1}$ by flattening the upper-triangular entries and computing cosine similarity,
+Pearson correlation, and Spearman correlation. We also compute these metrics over
+short- ($\leq 2$ \AA), medium- (2–4 \AA), and long-range ($>4$ \AA) atom pairs.
+
+The key difference lies in how attention is obtained. For MoLFormer-XL, exact
+softmax attention is directly available:
+\[
+A^{(\ell,h)} =
+\mathrm{softmax}\!\left(
+\frac{Q^{(\ell,h)} {K^{(\ell,h)}}^\top}{\sqrt{d_k}}
+\right).
+\]
+In SMI-TED$_{289\mathrm{M}}$, the
+attention matrix is not explicitly formed. We instead reconstruct the effective
+attention by extracting query and key tensors via the model’s \texttt{QKVEvent}
+interface and applying the feature map $\phi$:
+\[
+A_{ij}^{(\ell,h)}
+=
+\frac{
+\phi(q_i^{(\ell,h)})^\top \phi(k_j^{(\ell,h)})
+}{
+\phi(q_i^{(\ell,h)})^\top \sum_r \phi(k_r^{(\ell,h)}) + \varepsilon
+}.
+\]
+
+Apart from this difference, the analysis pipeline is identical across models:
+construct 3D distances, align tokens to atoms, restrict to atom-level attention,
+and compute layer- and head-wise correlations.
+
+\para{Linear Probing Setup.}
+Let $\mathbf{h}^{(i)}_l \in \mathbb{R}^d$ denote the residual-stream hidden state at the $i$-th atom-token position at layer $l$, where $d{=}768$ and $l \in \{0, 1, \dots, 12\}$ (layer $0$ is the embedding output). We fit a linear probe $\mathbf{h} \mapsto \mathbf{W}\mathbf{h} + \mathbf{b}$ with $\mathbf{W} \in \mathbb{R}^{C_\tau \times d}$ and $\mathbf{b} \in \mathbb{R}^{C_\tau}$, where $C_\tau$ is the number of classes for task $\tau$. We additionally fit two control probes per: (i) a \emph{random-input} linear probe on a Gaussian feature matrix $\mathbf{X}_{\mathrm{rand}} \in \mathbb{R}^{N \times d}$ with i.i.d.\ entries $X_{ij} \sim \mathcal{N}(0, 1)$, in place of the real hidden states, and (ii) a 2-layer MLP probe $\mathbf{h} \mapsto \mathbf{W}_2\,\mathrm{ReLU}(\mathbf{W}_1\mathbf{h} + \mathbf{b}_1) + \mathbf{b}_2$ on the real hidden states (controls for missing nonlinearity). Training hyperparameters and atom-token alignment details are included in Appendix~\ref{app:training}. We report test accuracy and macro-F1; the latter distinguishes probes that genuinely separate minority classes from those that essentially predict the majority class.
+
+\para{Tasks.} We probe eight per-atom RDKit-derived properties on QM9: atom type ($C_\tau{=}4$), hybridization ($C_\tau{=}3$), chiral tag ($C_\tau{=}3$), aromaticity ($C_\tau{=}2$), ring membership ($C_\tau{=}2$), degree ($C_\tau{=}4$), formal charge ($C_\tau{=}3$), and total valence ($C_\tau{=}4$). Integer-valued properties (degree, valence) are treated as discrete classes rather than ordinal regression. Atom-token alignment, train/test split, optimisation hyperparameters, and standardisation are detailed in Appendix~\ref{app:training}.
+
+
+
+% \subsection{Experiment 2: Linear Probing}
+
+% We test where chemically meaningful atom-level information emerges across model
+% layers by training simple linear probes on hidden states. For each SMILES string \textbf{(1000 random selected from QM9 dataset)},
+% we construct an RDKit molecule and extract atom-level labels including atom type,
+% hybridization, aromaticity, ring membership, chirality, degree, formal charge, and
+% total valence. We align SMILES tokens to atoms and extract the corresponding hidden
+% state $h_i^{(\ell)} \in \mathbb{R}^d$ for each atom $i$ at each layer $\ell$.
+
+% For each property, we learn a linear mapping from hidden states to labels. Since these are categorical tasks, we use multinomial logistic regression:
+% \[
+% \hat{y}_i = \mathrm{softmax}(W^{(\ell)} h_i^{(\ell)} + b^{(\ell)}),
+% \]
+% where $W^{(\ell)}$ and $b^{(\ell)}$ are layer-specific parameters. 
+
+% We split the dataset at the molecule level (80/20) so that all atoms from a given molecule
+% appear only in either the train or test set. Probe performance is evaluated using
+% accuracy and weighted F1, and compared against a most-frequent-class dummy baseline.
+
+% The main difference between models is how hidden states are extracted. For
+% MoLFormer-XL, hidden states $\{h^{(\ell)}\}_{\ell=0}^L$ are returned directly via
+% the HuggingFace API using \texttt{output\_hidden\_states=True}. For
+% SMI-TED$_{289\mathrm{M}}$, hidden states are captured by registering forward hooks
+% on the token embedding layer and each encoder block. After extraction, the probing
+% pipeline is identical across models: atom-token alignment, molecule-level
+% train/test splitting, and layer-wise linear probing.
+
+% [Need to do for molecular level properties as well.]
+
+% [running into issue with inherent biases in QM9 dataset.]
+
+% \subsection{Experiment 3: Representation Geometry via PCA and UMAP}
+
+% We investigate the structure of learned atom-level representations by projecting
+% hidden states into low-dimensional spaces using principal component analysis
+% (PCA) and uniform manifold approximation and projection (UMAP). This experiment
+% provides a qualitative and geometric complement to the linear probing analysis,
+% allowing us to visualize how chemical properties are organized in representation
+% space across layers.
+
+% \paragraph{Atom-level representation extraction.}
+% For each SMILES string, we construct the corresponding RDKit molecule and align
+% SMILES tokens to heavy atoms using a tokenizer-based mapping. For each atom $i$
+% and layer $\ell$, we extract the hidden state
+% $h_i^{(\ell)} \in \mathbb{R}^d$ from the encoder. We analyze representations at
+% multiple layers, including the embedding layer ($\ell=0$), intermediate layers,
+% and the final layer.
+
+
+
+% \paragraph{Dimensionality reduction.}
+% For each layer $\ell$, we standardize hidden states across all atoms and apply
+% PCA to obtain a two-dimensional projection:
+% \[
+% z_i^{(\ell)} = \mathrm{PCA}_2\bigl(h_i^{(\ell)}\bigr).
+% \]
+% We additionally apply UMAP with cosine distance to capture potential
+% nonlinear structure in the representation space.
+
+% \paragraph{Random baseline.}
+% To assess whether observed structure arises from training rather than architectural
+% bias, we repeat the entire analysis using a randomly initialized encoder with
+% identical architecture. This provides a baseline for comparison against the
+% pretrained model.
+
+% \paragraph{Objective.}
+
+% [still in the works]
+
+% This experiment is designed to answer the following questions:
+% \begin{itemize}
+%     \item Do atom-level representations cluster according to chemical properties?
+%     \item At which layers does clustering emerge?
+%     \item Does the learned representation exhibit nonlinear organization not
+%     captured by linear probes?
+%     \item How does pretrained structure compare to random initialization?
+% \end{itemize}
+
+% [need to analyze other lower variance directions because information about properties could be stored there: LDA]
+
+% \subsection{Experiment 4: Supervised Representation Structure via LDA}
+
+% While PCA provides an unsupervised view of representation geometry, it may fail
+% to reveal chemically meaningful structure if such information lies in
+% low-variance directions. To address this limitation, we perform a supervised
+% dimensionality reduction analysis using linear discriminant analysis (LDA),
+% which explicitly identifies directions that maximize class separability.
+
+% \paragraph{Atom-level representation extraction.}
+% As in previous experiments, we extract atom-level hidden states
+% $h_i^{(\ell)} \in \mathbb{R}^d$ for each atom $i$ and layer $\ell$, using
+% token-to-atom alignment based on SMILES tokenization and RDKit molecule
+% construction. We analyze representations across multiple layers, including the
+% embedding layer and intermediate and final transformer layers.
+
+% \paragraph{LDA projection.}
+% For each property and each layer $\ell$, we standardize hidden states and fit a
+% linear discriminant analysis model:
+% \[
+% z_i^{(\ell)} = \mathrm{LDA}_k\bigl(h_i^{(\ell)}\bigr),
+% \]
+% where $k = \min(2, C - 1)$ and $C$ is the number of classes. For binary
+% properties, this yields a one-dimensional projection, which we augment with
+% random jitter for visualization. For multi-class properties, we use the top two
+% discriminant components.
+
+% \paragraph{Class balancing.}
+% To mitigate class imbalance---particularly the dominance of carbon atoms---we
+% construct a balanced subset of atoms by subsampling frequent classes. This
+% ensures that LDA projections are not dominated by a single majority class and
+% that separability reflects meaningful chemical distinctions.
+
+% \paragraph{Probe-direction comparison.}
+% To further connect supervised projections with probing results, we compare LDA
+% directions to linear probe directions obtained from logistic regression. For
+% binary tasks, we project representations onto the probe weight vector; for
+% multi-class tasks, we project onto the top singular vectors of the probe weight
+% matrix. This provides a direct link between representation geometry and
+% predictive features.
+
+% \paragraph{Objective.}
+% This experiment is designed to answer the following questions:
+% \begin{itemize}
+%     \item Do atom representations become linearly separable by chemical properties?
+%     \item At which layers does class separation emerge?
+%     \item How does supervised structure compare to unsupervised PCA?
+%     \item Are discriminative directions aligned with linear probe features?
+% \end{itemize}
+
+% \subsection{Experiment 5: Attention Head Ablation.}
+% To be described.
