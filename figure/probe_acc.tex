@@ -25,10 +25,10 @@
     \label{fig:acc-chiral-tag}
 \end{subfigure}
 
-\vspace{0.4em}
+% \vspace{0.4em}
 
-\centerline{\includegraphics[width=0.7\textwidth]{results_combined/legend.pdf}}
+\centerline{\includegraphics[width=0.9\textwidth]{results_combined/legend.pdf}}
 
-\caption{Linear-probe test accuracy per layer on four representative per-atom QM9 properties. Aromaticity (\ref{fig:acc-is-aromatic}) is encoded by the SMILES tokenizer (lowercase aromatic letters) and is recoverable from the embedding lookup at $100\%$ in both models. Ring membership (\ref{fig:acc-is-in-ring}), degree (\ref{fig:acc-degree}), and chiral tag (\ref{fig:acc-chiral-tag}) are contextual---the same \texttt{C} token can carry different ring/degree/stereochemistry depending on its surroundings---and reveal a clear pretraining gap: \smi reaches near-perfect accuracy by mid-layers while \molm plateaus around $0.85$. The remaining four properties (Appendix~\ref{app:probe-all}, Figure~\ref{fig:acc-all}) follow one of these two regimes.}
+\caption{Linear-probe test accuracy per layer on four representative per-atom QM9 properties.  \smi reaches near-perfect accuracy by mid-layers while \molm plateaus around $0.85$, indicating \smi encodes the information more cleanly.}
 \label{fig:acc}
 \end{figure*}

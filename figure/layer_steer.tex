@@ -25,10 +25,10 @@
     \label{fig:steer-chiral-tag}
 \end{subfigure}
 
-\vspace{0.4em}
+% \vspace{0.4em}
 
 \centerline{\includegraphics[width=0.45\textwidth]{results_steer_layers/by_layer_legend.pdf}}
 
-\caption{\textbf{Intervention success rate as a function of the steer layer.} For each (task, model, layer~$\ell$) we intervene at $\ell$ along the layer-$\ell$ probe direction and read the layer-$12$ probe; the curve plots the best success rate over $\alpha$ on $200$ held-out QM9 molecules. Aromaticity (\ref{fig:steer-is-aromatic}) is at $1.00$ at every depth in both models. Ring membership (\ref{fig:steer-is-in-ring}), degree (\ref{fig:steer-degree}), and chiral tag (\ref{fig:steer-chiral-tag}) all show the cleanest pretraining-difference shape: \smi's success rises rapidly and saturates at $1.0$ by mid-layers, while \molm's climbs gradually and only reaches $1.00$ at the top of the encoder, even though \molm's probe accuracy on these tasks is roughly constant across mid-layers.}
+\caption{Intervention success rate. \smi's success rises rapidly and saturates at $1.0$ by mid-layers, while \molm's climbs gradually and only reaches $1.00$ at later layers, indicating different usage of the representations. }
 \label{fig:steer-layer}
 \end{figure*}
