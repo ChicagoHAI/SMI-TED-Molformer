@@ -1,9 +1,13 @@
 \section{Results}
 \label{sec:results}
 
+\subsection{Attention-Distance Correlation}
+
+\subsection{Linear Probing}
+
 We organize the analysis around two complementary measurements that probe different aspects of the same representation. A linear probe asks whether a chemical property is \emph{encoded} as a readable signal in the residual stream---it locates information. A causal intervention along the probe's decision direction asks whether that direction is \emph{used} by the rest of the encoder---it tests function. We present probing in Section~\ref{sec:res-probe} and intervention in Section~\ref{sec:res-steer}. We focus the main text on four representative properties---aromaticity, ring membership, degree, and chiral tag---that span the qualitatively distinct regimes we observe; the remaining four tasks fall into one of these regimes (Appendix~\ref{app:probe-all}). \xiaoyan{TODO: This should be about attention and probing}
 
-\subsection{Linear probing: what is encoded}
+\subsubsection{Linear probing: what is encoded}
 \label{sec:res-probe}
 \input{figure/probe_acc}
 
@@ -11,13 +15,12 @@ We organize the analysis around two complementary measurements that probe differ
 Aromaticity (Figure~\ref{fig:acc-is-aromatic}) is surface-form properties, where its label sits in the case of the letter (lowercase \texttt{c}, \texttt{n}, \texttt{o}, etc.\ for aromatic atoms). The probe results reach $100\%$ test accuracy at layer~$0$ in both \molm and \smi, indicating the properties are directly encoded in the embedding. Probe accuracy on surface-form properties reflects tokenizer design rather than learned representation, which aligns with how human reads the SMILE string. Other properties are shown in Appendix~\ref{app:probe-all}.
 
 \para{\smi encodes contextual properties more cleanly than \molm.}
-The clearest cross-model gap appears on the non-surface-form (\emph{contextual}) properties: ring membership, degree, and chiral tag (Figure~\ref{fig:acc-is-in-ring}, \ref{fig:acc-degree}, \ref{fig:acc-chiral-tag}). The same \texttt{C} token can belong to a ring or not, can have different degree, and can carry different stereochemistry depending on its surroundings, so a probe that achieves high accuracy on these tasks must read information that the encoder put there from context. \smi reaches near-perfect accuracy by mid-layers on all three (and on hybridization in Appendix~\ref{app:probe-all}), while \molm plateaus around $0.62 - 0.85$.  Due to the chemical dataset is naturally biased towards certain atom and structure, the fact that the probe accuracy of chiral tag of \molm is nearly the same as the majority baseline, it means that the model is not effectively learning to distinguish between different chiral states. 
+The clearest cross-model gap appears on the non-surface-form (\emph{contextual}) properties: ring membership, degree, and chiral tag (Figure~\ref{fig:acc-is-in-ring}, \ref{fig:acc-degree}, \ref{fig:acc-chiral-tag}). The same \texttt{C} token can belong to a ring or not, can have different degree, and can carry different stereochemistry depending on its surroundings, so a probe that achieves high accuracy on these tasks must read information that the encoder put there from context. \smi reaches near-perfect accuracy by mid-layers on all three (and on hybridization in Appendix~\ref{app:probe-all}), while \molm plateaus around $0.62 - 0.85$.  Due to the chemical dataset is naturally biased towards certain atom and structure, the fact that the probe accuracy of chiral tag of \molm is nearly the same as the majority baseline, it means that the model is not effectively learning to distinguish between different chiral states. The results are similar when we trained a non-linear probe (Appendix \xiaoyan{TODO}). 
 
-\subsection{Causal intervention: what is used}
+\subsubsection{Causal intervention: what is used}
 \label{sec:res-steer}
 \input{figure/layer_steer}
 
-For a given task, choice of source class $c$, target class $c'$, and steer layer $\ell$, we shift every atom-token position whose baseline prediction is $c$ by $\alpha \cdot (\mathbf{W}_{c'}-\mathbf{W}_{c})/\boldsymbol{\sigma}$ at layer $\ell$, then run the rest of the encoder and collect the layer-$12$ prediction. \emph{Intervention success rate} is the fraction of those positions whose post-intervention layer-$12$ prediction equals $c'$. We run a separate single-layer intervention at each candidate $\ell \in \{1, \ldots, 12\}$, using the probe trained at that layer's hidden states to define both the source-class detector and the steering direction, and report the success rate at the best-performing $\alpha$ on held-out molecules (Figure~\ref{fig:steer-layer}) More detailed setup is in Appendix~\ref{app:steering}.
 
 \para{The two models use contextual properties at different depths of the encoder.}
 \emph{Aromaticity} (Figure~\ref{fig:steer-is-aromatic}) gives the trivial baseline. Probe accuracy is $1.0$ from the embedding and intervention success is $\approx 1.0$ at every depth in both models. The probe direction is a usable channel everywhere because the property essentially \emph{is} the embedding.

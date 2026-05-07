@@ -1,5 +1,38 @@
-\section{Attention-Distance}
-\label{app:attention}
+\section{Attention-Distance Details}
+\label{app:attention-details}
+
+For each model and molecule, we measure whether attention
+preferentially connects atoms that are spatially close in 3-D.
+Specifically, for every layer--head pair $(l,h)$, we compute the
+Spearman correlation between attention weights and inverse
+interatomic distance over all unique atom pairs $i<j$,
+then average these correlations across molecules.
+
+The procedure consists of three steps.
+
+\textbf{(1) Attention extraction.}
+We capture the query and key tensors
+$\mathbf{q}_i^{(l,h)}$ and $\mathbf{k}_j^{(l,h)}$
+at each layer $l$ and head $h$ via the model's event dispatcher,
+and recover the effective attention weights
+$A_{ij}^{(l,h)}$ post hoc.
+
+\textbf{(2) Conformer generation.}
+Because SMILES strings encode molecular connectivity but not
+explicit 3-D geometry, we generate a single low-energy conformer
+for each molecule using ETKDGv3 followed by MMFF94 geometry
+optimization. This assigns each heavy atom a 3-D coordinate
+$\mathbf{r}_i=(x_i,y_i,z_i)$.
+
+\textbf{(3) Distance matrix and correlation.}
+From the optimized conformer, we compute the pairwise Euclidean
+distance
+$d_{ij}=\|\mathbf{r}_i-\mathbf{r}_j\|_2$
+between all heavy-atom pairs, yielding a symmetric distance matrix
+$\mathbf{D}\in\mathbb{R}^{n\times n}$.
+For each $(l,h)$ pair, we then compute the Spearman correlation
+between $\{A_{ij}^{(l,h)}\}$ and $\{1/d_{ij}\}$ over all unique
+pairs $i<j$.
 
 We test whether attention patterns reflect molecular geometry by comparing
 attention weights to 3D interatomic distances. For each SMILES string \textbf{(1000 random selected from QM9 dataset)}, we construct
