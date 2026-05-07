@@ -19,6 +19,21 @@ $D^{-1}$ by flattening the upper-triangular entries and computing cosine similar
 Pearson correlation, and Spearman correlation. We also compute these metrics over
 short- ($\leq 2$ \AA), medium- (2–4 \AA), and long-range ($>4$ \AA) atom pairs.
 
+\para{Attention-Distance Correlation Setup.} For each model and molecule, we extract per-layer, per-head
+attention weights $A_{ij}^{(l,h)}$ and compute a pairwise 3D
+distance matrix $D_{ij}$ over heavy atoms using an
+MMFF94-optimized conformer, where $i,j$ index heavy atoms,
+$l$ indexes the transformer layer, and $h$ indexes the attention head.
+
+We then measure the Spearman correlation between
+$A_{ij}^{(l,h)}$ and $1/D_{ij}$ for every $(l,h)$ pair,
+averaged across molecules. Furthermore, we stratify atom pairs by distance range:
+\emph{short} ($D_{ij}\le2$\,\AA),
+\emph{medium} ($2<D_{ij}\le4$\,\AA), and
+\emph{long} ($D_{ij}>4$\,\AA),
+to identify which attention heads preferentially encode
+local versus long-range spatial structure.
+
 \para{Linear Probing Setup.}
 Let $\mathbf{h}^{(i)}_l \in \mathbb{R}^d$ denote the residual-stream hidden state at the $i$-th atom-token position at layer $l$, where $d{=}768$ and $l \in \{0, 1, \dots, 12\}$ (layer $0$ is the embedding output). We fit a linear probe $\mathbf{h} \mapsto \mathbf{W}\mathbf{h} + \mathbf{b}$ with $\mathbf{W} \in \mathbb{R}^{C_\tau \times d}$ and $\mathbf{b} \in \mathbb{R}^{C_\tau}$, where $C_\tau$ is the number of classes for task $\tau$. We additionally fit two control probes per: (i) a \emph{random-input} linear probe on a Gaussian feature matrix $\mathbf{X}_{\mathrm{rand}} \in \mathbb{R}^{N \times d}$ with i.i.d.\ entries $X_{ij} \sim \mathcal{N}(0, 1)$, in place of the real hidden states, and (ii) a 2-layer MLP probe $\mathbf{h} \mapsto \mathbf{W}_2\,\mathrm{ReLU}(\mathbf{W}_1\mathbf{h} + \mathbf{b}_1) + \mathbf{b}_2$ on the real hidden states (controls for missing nonlinearity). Training hyperparameters and atom-token alignment details are included in Appendix~\ref{app:training}. We report test accuracy and macro-F1; the latter distinguishes probes that genuinely separate minority classes from those that essentially predict the majority class.
 
