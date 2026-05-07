@@ -1,2 +1,16 @@
 \section{Attention-Distance}
 \label{app:attention}
+
+We test whether attention patterns reflect molecular geometry by comparing
+attention weights to 3D interatomic distances. For each SMILES string \textbf{(1000 random selected from QM9 dataset)}, we construct
+a 3D conformer using RDKit (ETKDG + optional MMFF optimization) and compute the
+pairwise Euclidean distance matrix $D$. We then form an inverse-distance matrix
+$D^{-1}$ to align with the intuition that stronger attention should correspond to
+closer atoms.
+
+We align SMILES tokens to heavy atoms using each model’s tokenizer, discarding
+non-atomic tokens. For each layer $\ell$ and head $h$, we extract an atom-level
+attention submatrix $A^{(\ell,h)} \in \mathbb{R}^{N \times N}$ and compare it to
+$D^{-1}$ by flattening the upper-triangular entries and computing cosine similarity,
+Pearson correlation, and Spearman correlation. We also compute these metrics over
+short- ($\leq 2$ \AA), medium- (2–4 \AA), and long-range ($>4$ \AA) atom pairs.

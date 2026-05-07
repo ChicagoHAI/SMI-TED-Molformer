@@ -3,31 +3,15 @@
 \label{sec:methods}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\subsection{Experiment 1: Attention--Distance Correlation}
-
-We test whether attention patterns reflect molecular geometry by comparing
-attention weights to 3D interatomic distances. For each SMILES string \textbf{(1000 random selected from QM9 dataset)}, we construct
-a 3D conformer using RDKit (ETKDG + optional MMFF optimization) and compute the
-pairwise Euclidean distance matrix $D$. We then form an inverse-distance matrix
-$D^{-1}$ to align with the intuition that stronger attention should correspond to
-closer atoms.
-
-We align SMILES tokens to heavy atoms using each model’s tokenizer, discarding
-non-atomic tokens. For each layer $\ell$ and head $h$, we extract an atom-level
-attention submatrix $A^{(\ell,h)} \in \mathbb{R}^{N \times N}$ and compare it to
-$D^{-1}$ by flattening the upper-triangular entries and computing cosine similarity,
-Pearson correlation, and Spearman correlation. We also compute these metrics over
-short- ($\leq 2$ \AA), medium- (2–4 \AA), and long-range ($>4$ \AA) atom pairs.
-
 \para{Attention-Distance Correlation Setup.} For each model and molecule, we extract per-layer, per-head
 attention weights $A_{ij}^{(l,h)}$ and compute a pairwise 3D
-distance matrix $D_{ij}$ over heavy atoms using an
+distance matrix $D_{ij}$ over \textbf{heavy} atoms using an
 MMFF94-optimized conformer, where $i,j$ index heavy atoms,
 $l$ indexes the transformer layer, and $h$ indexes the attention head.
 
-We then measure the Spearman correlation between
-$A_{ij}^{(l,h)}$ and $1/D_{ij}$ for every $(l,h)$ pair,
-averaged across molecules. Furthermore, we stratify atom pairs by distance range:
+For each $(l,h)$ pair and each molecule, we compute the
+Spearman correlation between $\{A_{ij}^{(l,h)}\}$ and
+$\{1/D_{ij}\}$ over all unique atom pairs $i<j$. These per-molecule correlations are then averaged across the dataset. Furthermore, we stratify atom pairs by distance range:
 \emph{short} ($D_{ij}\le2$\,\AA),
 \emph{medium} ($2<D_{ij}\le4$\,\AA), and
 \emph{long} ($D_{ij}>4$\,\AA),
