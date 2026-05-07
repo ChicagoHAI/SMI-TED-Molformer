@@ -19,32 +19,6 @@ $D^{-1}$ by flattening the upper-triangular entries and computing cosine similar
 Pearson correlation, and Spearman correlation. We also compute these metrics over
 short- ($\leq 2$ \AA), medium- (2–4 \AA), and long-range ($>4$ \AA) atom pairs.
 
-The key difference lies in how attention is obtained. For MoLFormer-XL, exact
-softmax attention is directly available:
-\[
-A^{(\ell,h)} =
-\mathrm{softmax}\!\left(
-\frac{Q^{(\ell,h)} {K^{(\ell,h)}}^\top}{\sqrt{d_k}}
-\right).
-\]
-In SMI-TED$_{289\mathrm{M}}$, the
-attention matrix is not explicitly formed. We instead reconstruct the effective
-attention by extracting query and key tensors via the model’s \texttt{QKVEvent}
-interface and applying the feature map $\phi$:
-\[
-A_{ij}^{(\ell,h)}
-=
-\frac{
-\phi(q_i^{(\ell,h)})^\top \phi(k_j^{(\ell,h)})
-}{
-\phi(q_i^{(\ell,h)})^\top \sum_r \phi(k_r^{(\ell,h)}) + \varepsilon
-}.
-\]
-
-Apart from this difference, the analysis pipeline is identical across models:
-construct 3D distances, align tokens to atoms, restrict to atom-level attention,
-and compute layer- and head-wise correlations.
-
 \para{Linear Probing Setup.}
 Let $\mathbf{h}^{(i)}_l \in \mathbb{R}^d$ denote the residual-stream hidden state at the $i$-th atom-token position at layer $l$, where $d{=}768$ and $l \in \{0, 1, \dots, 12\}$ (layer $0$ is the embedding output). We fit a linear probe $\mathbf{h} \mapsto \mathbf{W}\mathbf{h} + \mathbf{b}$ with $\mathbf{W} \in \mathbb{R}^{C_\tau \times d}$ and $\mathbf{b} \in \mathbb{R}^{C_\tau}$, where $C_\tau$ is the number of classes for task $\tau$. We additionally fit two control probes per: (i) a \emph{random-input} linear probe on a Gaussian feature matrix $\mathbf{X}_{\mathrm{rand}} \in \mathbb{R}^{N \times d}$ with i.i.d.\ entries $X_{ij} \sim \mathcal{N}(0, 1)$, in place of the real hidden states, and (ii) a 2-layer MLP probe $\mathbf{h} \mapsto \mathbf{W}_2\,\mathrm{ReLU}(\mathbf{W}_1\mathbf{h} + \mathbf{b}_1) + \mathbf{b}_2$ on the real hidden states (controls for missing nonlinearity). Training hyperparameters and atom-token alignment details are included in Appendix~\ref{app:training}. We report test accuracy and macro-F1; the latter distinguishes probes that genuinely separate minority classes from those that essentially predict the majority class.
 
