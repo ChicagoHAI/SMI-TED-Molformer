@@ -1,0 +1,20 @@
+\section{Atomic Properties Derived from RDKit}
+\label{appendix:properties}
+
+Each atom in a molecule is annotated with eight chemically meaningful properties computed via RDKit. We distinguish between properties that are directly recoverable from the SMILES string and those that require explicit cheminformatics computation.
+
+\paragraph{Directly recoverable from SMILES tokenization.}
+\textbf{Atom type} refers to the chemical element identity of each atom. Element symbols are explicitly encoded in the SMILES string and assigned distinct token IDs by the tokenizer, making atom type directly readable without additional computation.
+\textbf{Aromaticity} indicates whether an atom belongs to an aromatic system. Aromatic atoms are represented by lowercase letters in SMILES notation, so this property is also directly encoded in the string.
+
+\paragraph{Partially signaled by SMILES.}
+\textbf{Formal charge} represents the electric charge assigned to an atom based on its valence electron count relative to its neutral state. It is sometimes indicated by bracket notation in SMILES, but its presence is not guaranteed across all representations and requires standardization by RDKit to yield consistent labels.
+\textbf{Chiral tag} encodes the stereochemical configuration at a chiral center. While SMILES partially signals chirality through \texttt{@} and \texttt{@@} symbols, canonical and consistent assignment requires stereochemical perception by RDKit.
+
+\paragraph{Requiring explicit cheminformatics computation.}
+\textbf{Hybridization} describes the orbital hybridization state of an atom. Although aromatic atoms implicitly carry sp\textsuperscript{2} character through SMILES lowercase notation, hybridization for non-aromatic atoms requires full valence resolution by RDKit.
+\textbf{Degree} refers to the number of directly bonded heavy-atom neighbors of each atom. While bond connectivity is encoded in SMILES, the degree of each atom must be computed by parsing the molecular graph, as implicit hydrogens complicate direct reading from the string.
+\textbf{Total valence} denotes the total number of bonds formed by an atom, including bonds to implicit hydrogens. Since SMILES typically suppresses hydrogen atoms, total valence cannot be read from the string and requires RDKit to enumerate implicit hydrogens.
+\textbf{Ring membership} indicates whether an atom belongs to one or more ring structures. Although SMILES encodes ring closures through numbered bond descriptors, determining ring membership for each atom requires explicit ring perception algorithms in RDKit, particularly for fused or bridged polycyclic systems.
+
+The last five properties listed above cannot be determined from the raw SMILES string alone and therefore serve as the most informative targets for evaluating how much structural information a model has learned beyond its tokenization.

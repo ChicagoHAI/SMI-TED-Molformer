@@ -3,35 +3,28 @@
 \label{sec:background}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\xiaoyan{Introduce those two models briefly, including their architecture, their training objective, and the downstream tasks they were applied. Both of the paper have some interp analysis, you can add short description about those analysis and why we are different too. SMI-TED analysis is in this paper: Foundation Models Enabling Multi-Scale Battery Materials Discovery. Also you should introduce the properties we are testing. Are those properties able to be read from the string? Explain the relationship between the property and the SMILES string. the following properties}
-MoLFormer is an encoder-only masked language model pre-trained on 1.1 billion molecules from PubChem and ZINC via a masked language modeling objective, processing SMILES sequences through \xiaoyan{This attention and feedforward part should go to appendix. I don't think we need this detail}alternating self-attention and feed-forward blocks with linear RoFormer attention and a 768-dimensional token embedding space. Its downstream applications include molecular property prediction \xiaoyan{What kind of properties? Can we be read from the strings?} and multimodal battery electrolyte formulation performance prediction \citep{ross2022largescalechemicallanguagerepresentations}. SMI-TED is a 289-million-parameter encoder-decoder foundation model pre-trained on 91 million curated SMILES from PubChem through a combined masked language modeling and token reconstruction objective, evaluated on molecular property classification and regression across eleven MoleculeNet benchmarks \xiaoyan{You should cite this.}, SMILES reconstruction, and battery electrolyte property prediction \citep{soares2024smi}. 
+\subsection{Chemistry Foundational Models}
 
-Prior interpretability work on these models has operated at the level of output embeddings or input-output correlations: \citet{soares2024smi} test whether molecular composition is represented linearly in the SMI-TED latent space by fitting linear regressions on families of carbon-chain molecule embeddings, while \citet{sharma2025foundation} assess interpretability by computing Spearman correlations between chemical moiety fingerprints and model-predicted formulation performance outcomes. Our work differs by targeting the internal computational structure of both models directly, systematically comparing standard softmax attention in MoLFormer against linear FAVOR+ attention in SMI-TED at the level of internal representations, allowing us to assess in a mechanistically grounded way how each attention paradigm encodes chemical structural information from SMILES during pre-training. To probe this, each atom is annotated with eight RDKit-derived properties. \xiaoyan{This can go into related work}
+\molm{} is an encoder-only masked language model pre-trained on 1.1 billion molecules from PubChem and ZINC via a masked language modeling objective. Its downstream applications include molecular property prediction and multimodal battery electrolyte formulation performance prediction \citep{ross2022largescalechemicallanguagerepresentations}. \smi{} is a 289-million-parameter encoder-decoder foundation model pre-trained on 91 million curated SMILES from PubChem through a combined masked language modeling and token reconstruction objective, evaluated on molecular property classification and regression across eleven MoleculeNet benchmarks \citep{wu2018moleculenet}, SMILES reconstruction, and battery electrolyte property prediction \citep{soares2024smi}.
 
-Atom type and aromaticity are directly recoverable from the SMILES tokenization, as element symbols and lowercase aromatic notation are explicitly encoded in the string. Formal charge is partially signaled by bracket notation but requires standardization. Hybridization, degree, total valence, ring membership, and chiral tag cannot be determined from the raw SMILES string alone and require explicit molecular graph construction, ring perception, hydrogen enumeration, or stereochemical canonicalization by RDKit, making them the most informative targets for evaluating how much structural information a model has learned beyond its tokenization. \xiaoyan{YOu can put the description of those property in the appendix. The definition of those properties. And refer to the appendix}
+\subsection{Chemical Properties and SMILES String}
+
+To probe learned structural representations, each atom is annotated with eight RDKit-derived properties. A key distinction exists between properties that are determined directly by SMILES tokenization and those that require contextual computation. Atom type and aromaticity fall into the first category, as element symbols are explicitly encoded as distinct tokens, and aromatic atoms are marked by lowercase letters in SMILES notation, meaning these properties are fully recoverable from the embedding lookup before any transformer computation takes place. By contrast, hybridization, degree, total valence, ring membership, and chiral tag cannot be read from individual tokens in isolation and require the model to integrate information across the molecular graph, making them genuine tests of what the encoder has learned beyond its tokenization. Detailed definitions of all properties are provided in Appendix~\ref{appendix:properties}.
+
 % \paragraph{Chemical property labels.}
 
-Each atom is annotated with a set of chemically meaningful properties derived
-from RDKit:
-\begin{itemize}
-    \item atom type
-    \item hybridization
-    \item chiral tag 
-    \item degree
-    \item formal charge
-    \item total valence
-    \item aromaticity 
-    \item ring membership
-\end{itemize}
-
-\para{Chemistry foundational models.}
-
-\para{Chemical properties and SMILES string. }
-
 \section{Related Work}
-\para{Understand chemistry models.}
 
-\para{Interpretability for scientific foundation models.}
+\subsection{Interpretability of Chemical Language Models}
+
+Prior interpretability analyses of chemical language models have operated at the level of output embeddings or input-output correlations, without examining internal layer-by-layer representations. \citet{soares2024smi} construct a dataset of six carbon-chain molecular families, apply t-SNE to visualize the final embedding space, and fit linear regressions to SMILES embedding triplets to test whether molecular composition is linearly represented in the latent space. \smi{} achieves $R^2 = 0.99$ on this task compared to $R^2 = 0.55$ for \molm{}, suggesting that \smi{} organizes molecular information more linearly. However, this analysis is confined to the output embedding layer and does not examine how representations evolve across encoder depth or interrogate the attention mechanism. \citet{sharma2025foundation} define SMARTS strings for over 550 chemical substructures, compute per-molecule functional-group presence vectors aggregated into formulation descriptors weighted by molar composition, and apply Spearman correlation to relate chemical functional groups to downstream prediction performance. This approach characterizes relationships between chemical inputs and model outputs but does not inspect any internal model representations. In both cases, the analyses remain at the surface of the model and do not address which layers encode which properties or whether the encoded features are causally used in computation.
+
+\subsection{Mechanistic Interpretability Tools from NLP}
+
+The mechanistic interpretability tools we employ have well-established foundations in NLP research. Linear classifier probes were introduced by \citet{alain2016understanding}, who proposed fitting independent linear classifiers to the hidden states at each layer of a neural network and demonstrated that probe accuracy increases monotonically with depth, reflecting how linearly separable features become as the network transforms its input. \citet{tenney2019bert} applied this framework to BERT using edge-probing tasks derived from the classical NLP pipeline, showing that syntactic information is encoded in earlier layers while semantic information emerges in higher layers, and that the model implicitly recapitulates the traditional hierarchy of linguistic processing. \citet{clark2019what} complemented this representational analysis by directly examining BERT's attention weights, finding that individual attention heads specialize in specific syntactic relations and that attention maps capture substantial syntactic structure without explicit syntactic supervision. The linear attention mechanism used by both \molm{} and \smi{} is based on the FAVOR$+$ approach introduced by \citet{choromanski2021rethinking}, which approximates softmax attention via positive orthogonal random features to achieve linear time and space complexity. Because this mechanism does not form an explicit attention matrix, reconstructing effective attention weights for \smi{} requires extracting query and key tensors and applying the feature map directly, as detailed in Section~\ref{sec:methods}.
+
+Our work brings mechanistic interpretability tools to chemical language models, establishing causal evidence for how structural properties are encoded. Rather than examining final-layer embeddings or input-output correlations, we track representations across all twelve encoder layers and separately distinguish properties recoverable from SMILES tokenization from those requiring genuine contextual computation. By combining linear probing with causal intervention, we move beyond demonstrating correlation to establishing that probed directions are actively maintained and used by the encoder. This allows us to draw a sharper distinction between \molm{} and \smi{}. Both models exhibit correlational signals for contextual chemical properties, but only \smi{} organizes these signals as stable, causally-used linear directions that propagate robustly through subsequent computation.
+
 % \subsection{SMILES as a Molecular Language}
 % \label{sec:smiles}
 
