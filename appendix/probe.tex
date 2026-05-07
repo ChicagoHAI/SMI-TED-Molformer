@@ -1,3 +1,12 @@
+\section{All Properties: Probe Accuracy and Steering by Layer}
+\label{app:probe-all}
+\label{app:steer-all}
+
+The main text presents three representative properties (aromaticity, atom type, degree) that illustrate the three observed regimes. Figure~\ref{fig:acc-all} shows linear-probe accuracy and Figure~\ref{fig:steer-layer-all} shows intervention success across the steer layer for all eight per-atom QM9 properties.
+
+\input{appendix/probe_acc_all}
+\input{appendix/layer_steer_all}
+
 \section{Linear Probe Training Details}
 \label{app:training}
 
@@ -28,17 +37,21 @@ Across all eight tasks and both models, the MLP probe improves test accuracy ove
 
 For each (task, layer) pair we additionally train an identical linear probe on a Gaussian random-features matrix $\mathbf{X}_{\mathrm{rand}} \in \mathbb{R}^{N \times 768}$ with $\mathbf{X}_{\mathrm{rand}, ij} \sim \mathcal{N}(0, 1)$, sampled once per script run and reused for every (task, layer) random probe. The same molecule-level split, class encoding, and standardisation are applied; the probe sees the same atom labels but uninformative inputs. Test macro-F1 falls within $1$--$2$ percentage points of $1/C$ (the chance level for macro-F1 when always predicting the majority class) for every task on both models, confirming that the real-features probe accuracy reflects encoder structure rather than overfitting capacity in the linear head.
 
-\section{Causal Steering Implementation}
+\section{Causal Steering Setup}
 \label{app:steering}
 
-\para{Steering vector.} For each (task, layer-$6$ probe) we form, in the original (unstandardised) hidden-state space,
+\input{table/layer6_intervene}
+
+\para{Steering vector.} For each (task, steer layer $\ell$) we form, in the original (unstandardized) hidden-state space,
 \[
 \mathbf{v}^{c \to c'} = (\mathbf{W}_{c'} - \mathbf{W}_{c}) / \boldsymbol{\sigma},
 \]
-where $\mathbf{W}_{c}$ is the probe's row for class $c$ and $\boldsymbol{\sigma}$ is the per-feature training standard deviation. Adding $\alpha \cdot \mathbf{v}^{c \to c'}$ to a hidden state increases the standardised logit difference $\mathrm{logit}_{c'} - \mathrm{logit}_{c}$ by $\alpha \cdot \|\mathbf{W}_{c'} - \mathbf{W}_c\|_{\boldsymbol{\sigma}^{-2}}^2$. For binary tasks, $\mathrm{tgt} = 1 - \mathrm{src}$. For multi-class tasks, we use a cycle target $\mathrm{tgt} = (\mathrm{src} + 1) \bmod C$.
+where $\mathbf{W}_{c}$ is the layer-$\ell$ probe's row for class $c$ and $\boldsymbol{\sigma}$ is the per-feature training standard deviation. Adding $\alpha \cdot \mathbf{v}^{c \to c'}$ to a hidden state increases the standardized logit difference $\mathrm{logit}_{c'} - \mathrm{logit}_{c}$ by $\alpha \cdot \|\mathbf{W}_{c'} - \mathbf{W}_c\|_{\boldsymbol{\sigma}^{-2}}^2$. For binary tasks, $\mathrm{tgt} = 1 - \mathrm{src}$. For multi-class tasks, we use a cycle target $\mathrm{tgt} = (\mathrm{src} + 1) \bmod C$.
 
-\para{Forward hook.} The hook is registered on \texttt{model.encoder.layer[5]}, modifies the layer's output tuple's first element by adding the per-position steering tensor, and is removed in a \texttt{try/finally} block immediately after the post-intervention forward pass. The pre- and post-intervention forward passes are run with \texttt{output\_hidden\_states=True} to capture the residual stream at every depth.
+\para{Forward hook and intervention.} For a steer layer $\ell$, the hook is registered on the module that produces $\mathbf{h}^{(\ell)}$ (\texttt{model.encoder.layer[$\ell$-1]} for \molm, \texttt{encoder.blocks.layers[$\ell$-1]} for \smi), modifies that layer's output by adding the per-position steering tensor at atom-token positions only, and is removed in a \texttt{try/finally} block immediately after the post-intervention forward pass. The pre- and post-intervention forward passes are run with \texttt{output\_hidden\_states=True} to capture the residual stream at every depth.
 
-\para{Metrics.} We report flip-to-target rate at the steer layer (must saturate at $1.0$ by construction; serves as a sanity check) and at the last layer (the propagation evidence), both as aggregate values and broken down by source class. The moved-off-source rate is reported alongside the flip-to-target rate to disentangle ``steering had effect'' from ``steering hit the intended target.''
+\para{Layer sweep.} The single-layer table (Table~\ref{tab:steering-success}) reports $\ell{=}6$. Figure~\ref{fig:steer-layer} (and the per-task panels in Figure~\ref{fig:steer-layer-all}) sweeps $\ell \in \{1, \ldots, 12\}$ and reports, per $(\text{task}, \text{model}, \ell)$, the intervention success rate at the best-performing $\alpha$ on the held-out molecules; this best-$\alpha$-per-layer summary is used as a single scalar diagnostic of whether the encoder routes through the layer-$\ell$ probe direction.
 
-\para{Sample size.} Each task is evaluated on $200$ molecules ($\sim 1.7$k atoms) drawn from the QM9 partition not used for probe training.
+\para{Metrics.} \emph{Intervention success rate} (or \emph{flip-to-target rate}) is the fraction of atom-token positions whose layer-$12$ probe prediction equals the intended target $c'$ after the intervention. We additionally report \emph{moved-off-source rate} (the fraction whose post-intervention layer-$12$ prediction differs from the source class $c$) so that, for multi-class tasks, ``steering had effect'' can be disentangled from ``steering hit the intended target''---a distinction that matters when the cycle target $\mathbf{W}_{c'}-\mathbf{W}_{c}$ does not point at the cycle-target centroid in the probe's prototype layout.
+
+\para{Sample size and hyperparameters.} Each task is evaluated on $200$ molecules ($\sim 1.7$k atoms) drawn from the QM9 partition not used for probe training. The $\alpha$ grid is $\{0, 1, 3, 10, 30, 100, 300\}$; the smallest non-zero $\alpha$ that maximizes success rate is reported per layer.

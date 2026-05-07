@@ -1,0 +1,52 @@
+\begin{figure*}[t]
+\centering
+\begin{subfigure}[t]{0.24\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{results_combined/atom_type.pdf}
+    \subcaption{atom type}
+\end{subfigure}\hfill
+\begin{subfigure}[t]{0.24\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{results_combined/hybridization.pdf}
+    \subcaption{hybridization}
+\end{subfigure}\hfill
+\begin{subfigure}[t]{0.24\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{results_combined/chiral_tag.pdf}
+    \subcaption{chiral tag}
+\end{subfigure}\hfill
+\begin{subfigure}[t]{0.24\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{results_combined/is_aromatic.pdf}
+    \subcaption{is aromatic}
+\end{subfigure}
+\vspace{0.6em}
+
+\begin{subfigure}[t]{0.24\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{results_combined/is_in_ring.pdf}
+    \subcaption{is in ring}
+\end{subfigure}\hfill
+\begin{subfigure}[t]{0.24\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{results_combined/degree.pdf}
+    \subcaption{degree}
+\end{subfigure}\hfill
+\begin{subfigure}[t]{0.24\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{results_combined/formal_charge.pdf}
+    \subcaption{formal charge}
+\end{subfigure}\hfill
+\begin{subfigure}[t]{0.24\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{results_combined/total_valence.pdf}
+    \subcaption{total valence}
+\end{subfigure}
+
+\vspace{0.4em}
+
+\centerline{\includegraphics[width=0.95\textwidth]{results_combined/legend.pdf}}
+
+\caption{Linear-probe test accuracy per layer on all eight per-atom QM9 properties. Three representative panels (aromaticity, atom type, degree) appear in the main text (Figure~\ref{fig:acc}); the remaining five (hybridization, chiral tag, ring membership, formal charge, total valence) follow the same three regimes: tokenizer-determined and flat near $1.0$ in both models (formal charge), \smi clean and \molm partial on a contextual property (ring membership, hybridization, chiral tag, total valence).}
+\label{fig:acc-all}
+\end{figure*}

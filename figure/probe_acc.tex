@@ -2,51 +2,33 @@
 \centering
 \begin{subfigure}[t]{0.24\textwidth}
     \centering
-    \includegraphics[width=\linewidth]{results_combined/atom_type.pdf}
-    \subcaption{atom type}
-\end{subfigure}\hfill
-\begin{subfigure}[t]{0.24\textwidth}
-    \centering
-    \includegraphics[width=\linewidth]{results_combined/hybridization.pdf}
-    \caption{hybridization}
-\end{subfigure}\hfill
-\begin{subfigure}[t]{0.24\textwidth}
-    \centering
-    \includegraphics[width=\linewidth]{results_combined/chiral_tag.pdf}
-    \caption{chiral tag}
-\end{subfigure}\hfill
-\begin{subfigure}[t]{0.24\textwidth}
-    \centering
     \includegraphics[width=\linewidth]{results_combined/is_aromatic.pdf}
-    \caption{is aromatic}
-\end{subfigure}
-\vspace{0.6em}
-
+    \subcaption{is aromatic}
+    \label{fig:acc-is-aromatic}
+\end{subfigure}\hfill
 \begin{subfigure}[t]{0.24\textwidth}
     \centering
     \includegraphics[width=\linewidth]{results_combined/is_in_ring.pdf}
-    \caption{is in ring}
+    \subcaption{is in ring}
+    \label{fig:acc-is-in-ring}
 \end{subfigure}\hfill
 \begin{subfigure}[t]{0.24\textwidth}
     \centering
     \includegraphics[width=\linewidth]{results_combined/degree.pdf}
-    \caption{degree}
+    \subcaption{degree}
+    \label{fig:acc-degree}
 \end{subfigure}\hfill
 \begin{subfigure}[t]{0.24\textwidth}
     \centering
-    \includegraphics[width=\linewidth]{results_combined/formal_charge.pdf}
-    \caption{formal charge}
-\end{subfigure}\hfill
-\begin{subfigure}[t]{0.24\textwidth}
-    \centering
-    \includegraphics[width=\linewidth]{results_combined/total_valence.pdf}
-    \caption{total valence}
+    \includegraphics[width=\linewidth]{results_combined/chiral_tag.pdf}
+    \subcaption{chiral tag}
+    \label{fig:acc-chiral-tag}
 \end{subfigure}
 
 \vspace{0.4em}
 
-\centerline{\includegraphics[width=0.95\textwidth]{results_combined/legend.pdf}}
+\centerline{\includegraphics[width=0.7\textwidth]{results_combined/legend.pdf}}
 
-\caption{Linear-probe test accuracy per layer for the eight per-atom RDKit properties on QM9. \smi encodes contextual properties (is in ring, degree, hybridization substantially more linearly than \molm, while token-determined properties (atom type, is aromatic) are trivially recovered by both.}
+\caption{Linear-probe test accuracy per layer on four representative per-atom QM9 properties. Aromaticity (\ref{fig:acc-is-aromatic}) is encoded by the SMILES tokenizer (lowercase aromatic letters) and is recoverable from the embedding lookup at $100\%$ in both models. Ring membership (\ref{fig:acc-is-in-ring}), degree (\ref{fig:acc-degree}), and chiral tag (\ref{fig:acc-chiral-tag}) are contextual---the same \texttt{C} token can carry different ring/degree/stereochemistry depending on its surroundings---and reveal a clear pretraining gap: \smi reaches near-perfect accuracy by mid-layers while \molm plateaus around $0.85$. The remaining four properties (Appendix~\ref{app:probe-all}, Figure~\ref{fig:acc-all}) follow one of these two regimes.}
 \label{fig:acc}
 \end{figure*}
