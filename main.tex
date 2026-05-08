@@ -38,6 +38,8 @@
 
 \usepackage[textsize=tiny]{todonotes}
 \newcommand{\xiaoyan}[1]{\textcolor{orange}{XB:#1}}
+\newcommand{\chenhao}[1]{\textcolor{magenta}{CT:#1}}
+
 \newcommand{\anita}[1]{\textcolor{red}{AH:#1}}
 \newcommand{\molm}{\textsc{MoLFormer}\xspace}
 \newcommand{\smi}{\textsc{SMI-TED}\xspace}
@@ -86,15 +88,15 @@
 \printAffiliationsAndNotice{}
 
 \begin{abstract}
-Large-scale molecular language models trained on SMILES strings, text-based representations of molecules, achieve strong performance on chemical prediction tasks, but it remains unclear how they internally represent molecular structure and properties. In this work, we analyze two widely used models, \molm~\cite{ross2022largescalechemicallanguagerepresentations} and \smi~\cite{soares2024smi}, from a mechanistic interpretability perspective. Prior analyses of chemical foundation models have focused on correlational analysis, including attention correlations, final-layer embedding structure, or input-output associations. We take a step toward a more mechanistic account by combining layerwise attention analysis, linear probing, and causal intervention. We find that attention shows only weak and selective correlation with true geometric structure. Probing reveals that \smi encodes contextual chemical properties as cleaner linear directions than \molm. We moved beyond correlational analysis towards causal interventions, which show that these directions are functionally used, and earlier in \smi than in \molm. Despite strong downstream performance, these results suggest that successful SMILES pretraining does not necessarily produce spatially grounded or uniformly usable chemical representations, highlighting a gap between predictive success and internal organization.
+Large-scale molecular language models trained on SMILES strings, text-based representations of molecules, achieve strong performance on chemical prediction tasks, but it remains unclear how they internally represent molecular structure and properties. In this work, we analyze two widely used models, \molm~\cite{ross2022largescalechemicallanguagerepresentations} and \smi~\cite{soares2024smi}, from a mechanistic interpretability perspective. Prior analyses of chemical foundation models have focused on correlational analysis, including attention correlations, final-layer embedding structure, or input-output associations. We take a step toward a more mechanistic account by combining layerwise attention analysis, linear probing, and causal intervention. We find that attention shows only weak and selective correlation with the underlying geometric structure. Probing reveals that \smi encodes contextual chemical properties as cleaner linear directions than \molm. We moved beyond correlational analysis towards causal interventions, which show that these directions are functionally used, and earlier in \smi than in \molm. Despite good downstream performance, these results suggest that successful SMILES pretraining does not necessarily produce spatially grounded or uniformly usable chemical representations, highlighting how diverse internal representations can support similar predictive success. \xiaoyan{TODO: add related discussion}
 
 \end{abstract}
 
 \input{section/intro}
 \input{section/background}
-\input{section/related_work}
 \input{section/method}
 \input{section/results}
+\input{section/related_work}
 \input{section/discussion}
 
 % TODO

@@ -2,7 +2,7 @@
 \section{Background}
 \label{sec:background}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+\xiaoyan{We can maybe make this shorter}
 \para{\molm and \smi.}
 We study two SMILES-based chemistry foundation models: \molm~\citep{ross2022largescalechemicallanguagerepresentations} and \smi~\citep{soares2024smi}. Both are transformer models pretrained without explicit geometric supervision and both use rotary linear attention, making them a useful pair for comparing how different pretraining choices shape internal chemical representations.
 \molm is an encoder-only model trained with a masked language modeling objective. It produces token-level hidden states and a pooled molecular representation for downstream prediction. In the original paper, it is evaluated on a range of complex molecular prediction tasks which requires understanding more than just basic properties, and it is argued that attention captures aspects of molecular structure \citep{ross2022largescalechemicallanguagerepresentations,wu2018moleculenet}. \smi, by contrast, uses an encoder--decoder design with both masked token prediction and sequence reconstruction. Its latent representation is therefore trained not only to support token-level inference, but also to retain enough information to reconstruct the input SMILES. The original \smi is evaluated on similar tasks as \molm \citep{soares2024smi,wu2018moleculenet}. \citet{sharma2025foundation} build on \smi for downstream scientific prediction and also includes an interpretability analysis by relating chemical descriptors to model behavior through correlation. 

@@ -1,23 +1,17 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Introduction}
 \label{sec:intro}
-\xiaoyan{use para instead of paragragh.}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\xiaoyan{You can first introduce scientific model ->  chemistry foundation model. And then add some literature about trying to understand those models and our motivation on trying to understand those models. In the end, you can provide a summary of our contribution. }
-Molecular property prediction is a crucial step in drug discovery and materials
-science. Traditional approaches rely on hand-crafted molecular fingerprints or graph
-neural networks that explicitly encode molecular structure.
-More recently, transformer-based language models pretrained on large corpora of
-SMILES strings have emerged as a powerful alternative, learning rich molecular
-representations without requiring explicit structural inductive biases.
+Recent transformer-based chemical foundation models trained on SMILES strings have demonstrated strong performance on diverse downstream molecular tasks. However, it remains unclear what chemical information these models internally represent, where such information emerges across layers, and how it is utilized during computation. This motivates a mechanistic investigation of the internal representations learned by chemical foundation models.
 
-Despite impressive benchmark performance, the representational mechanisms of these
-models are not well understood. Do attention heads specialise for particular
-chemical substructures? Which layers encode atom-level chemical properties? To what
-extent does the learned representation reflect three-dimensional molecular geometry?
-These questions are important both for scientific understanding and for the
-trustworthy deployment of molecular AI in high-stakes domains. \xiaoyan{I think there are works about understanding the structures.}
+This question is particularly important because SMILES strings do not explicitly encode many chemically meaningful properties.
+While local syntactic information such as atom identity is directly visible from the token sequence, higher-level chemical structure---including stereochemistry, valence, ring structure, and 3D geometry---must instead be inferred from context.
 
-Prior interpretability analyses of chemical foundation models have mostly focused on attention-based correlations, the structure of final-layer embeddings, or correlations between chemical descriptors and model outputs. These analyses provide useful evidence that chemical information is present, but they do not show how such information is distributed across layers or whether it is functionally used during computation. In this paper, we take a step toward a more mechanistic account by studying two chemical language models, \molm and \smi, at the level of their internal representations.
+\anita{hm maybe smth on why we choose to compare both \molm and \smi?}
 
-Concretely, we make three contributions. First, we perform a systematic attention--distance analysis across all layers and heads in both models, providing a more thorough test of whether attention aligns with 3D molecular geometry. Second, we use layerwise linear probes to track how atom-level chemical properties emerge across depth and to distinguish token-level features from contextual chemical information. Third, we apply causal intervention on probe directions to test whether decoded chemical features are merely accessible or are actively used by later computation. Together, these analyses allow us to compare not only what chemical information is represented, but how it is organized and when it becomes usable.
+In this work, we study the internal representations of two widely used chemistry foundation models, \molm and \smi. We first analyze whether attention patterns directly encode molecular geometry by measuring per-layer per-head correlations between attention weights and inverse 3D interatomic distance.
+We then probe hidden states for atom-level chemical properties ranging from surface-form descriptors to contextual structural features requiring graph-level reasoning.
+Finally, we perform causal interventions on probe directions to test whether these representations are merely linearly recoverable or are functionally used by the model during computation.
+
+While \molm suggests that transformer attention strongly aligns with interatomic proximity, our results show that this correlation is weak and highly non-uniform, with modest correlation observed only at short interatomic distances. However, several contextual chemical properties are strongly linearly recoverable from hidden states, particularly in \smi. This is consistent with the strong downstream performance reported by both \molm and \smi. Moreover, causal interventions reveal that these representations become functionally usable substantially earlier in \smi than in \molm.
+Together, these findings suggest that successful SMILES pretraining does not necessarily produce spatially grounded or uniformly organized chemical representations, highlighting a gap between downstream predictive performance and the internal structure of learned representations.
