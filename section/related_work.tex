@@ -1,47 +1,7 @@
 \section{Related Work}
 
-\para{Chemistry model}
-Prior work on interpreting chemical language models has examined how molecular 
-information is encoded across model components and layers, using a range of 
-complementary techniques. Pinto~\cite{pinto2025superior} systematically 
-evaluated layer-wise representations of five pretrained molecular encoders 
-across 22 ADMET property prediction tasks, finding that intermediate layers 
-consistently outperform the final layer as feature sources in both frozen 
-embedding and finetuning settings. Varadi et al.~\cite{varadi2025circuits} 
-performed a mechanistic analysis of an autoregressive transformer trained on 
-drug-like SMILES strings, identifying attention heads responsible for syntactic 
-operations such as ring closure matching and branch balancing, and used sparse 
-autoencoders to extract interpretable features aligned with chemical functional 
-groups. Cohen et al.~\cite{cohen2025unveiling} applied sparse autoencoders to 
-\smi, extracting interpretable features from molecular embeddings that 
-correspond to chemical substructures, physicochemical properties, and 
-pharmacological drug classes, and further demonstrated that intervening on 
-specific feature activations enables targeted modifications to molecular 
-structures. M\"{u}ller et al.~\cite{muller2025uncovering} applied ablation and 
-a regression lens adapted from NLP to ChemBERTa, revealing how molecular 
-property predictions evolve layer by layer and which model components are 
-critical for downstream performance. Hu et al.~\cite{hu2024empirical} 
-pre-trained a GPT-based language model on SMILES and fine-tuned it with 
-reinforcement learning for drug design tasks, showing that the model's learned 
-representations correspond to meaningful molecular fragments rather than 
-superficial sequence patterns. 
+\para{Downstream applications of \molm and \smi.}
+Both encoders we study are widely used as fixed feature extractors or finetuning backbones for downstream chemistry tasks. \molm has been applied to molecular property prediction across the MoleculeNet benchmarks~\citep{ross2022largescalechemicallanguagerepresentations,wu2018moleculenet} and adapted to ADMET and bioactivity prediction with parameter-efficient finetuning~\citep{harod2025effichem}. \smi has been used as a backbone for multi-scale battery materials and electrolyte discovery~\citep{sharma2025foundation}, and SMILES encoders of this family appear as components in multimodal property predictors that combine text and graph features~\citep{rollins2024molprop} and in scaling studies of chemical foundation models~\citep{cai2026chemfm}. These applications treat the encoders as black-box feature sources, which motivates our question of where in their layer stacks chemical information is actually represented and used.
 
-In contrast to prior works that rely on correlational analyses of attention 
-patterns, final-layer embedding geometry, or input-output associations, we take 
-a step toward a more mechanistic account of two widely used SMILES-based 
-encoders, \molm and \smi,. We combine layerwise 
-attention-distance correlation analysis, linear probing, and causal 
-intervention to examine not only what chemical information is encoded, but 
-where it becomes functionally usable during computation. Our results show that 
-\smi makes contextual chemical properties causally active earlier in the 
-encoder than \molm, a difference not captured by correlational analyses 
-alone, suggesting that pretraining design meaningfully shapes internal 
-representational organization.
-
-\para{Understanding Scientific Foundation Models.}
-
-
-% \para{Mechanistic Interpretability Tools from NLP.}
-% The mechanistic interpretability tools we employ have well-established foundations in NLP research. Linear classifier probes were introduced by \citet{alain2016understanding}, who proposed fitting independent linear classifiers to the hidden states at each layer of a neural network and demonstrated that probe accuracy increases monotonically with depth, reflecting how linearly separable features become as the network transforms its input. \citet{tenney2019bert} applied this framework to BERT using edge-probing tasks derived from the classical NLP pipeline, showing that syntactic information is encoded in earlier layers while semantic information emerges in higher layers, and that the model implicitly recapitulates the traditional hierarchy of linguistic processing. \citet{clark2019what} complemented this representational analysis by directly examining BERT's attention weights, finding that individual attention heads specialize in specific syntactic relations and that attention maps capture substantial syntactic structure without explicit syntactic supervision. The linear attention mechanism used by both \molm{} and \smi{} is based on the FAVOR$+$ approach introduced by \citet{choromanski2021rethinking}, which approximates softmax attention via positive orthogonal random features to achieve linear time and space complexity. Because this mechanism does not form an explicit attention matrix, reconstructing effective attention weights for \smi{} requires extracting query and key tensors and applying the feature map directly, as detailed in Section~\ref{sec:methods}.
-
-% Our work brings mechanistic interpretability tools to chemical language models, establishing causal evidence for how structural properties are encoded. Rather than examining final-layer embeddings or input-output correlations, we track representations across all twelve encoder layers and separately distinguish properties recoverable from SMILES tokenization from those requiring genuine contextual computation. By combining linear probing with causal intervention, we move beyond demonstrating correlation to establishing that probed directions are actively maintained and used by the encoder. This allows us to draw a sharper distinction between \molm and \smi. Both models exhibit correlational signals for contextual chemical properties, but only \smi organizes these signals as stable, causally-used linear directions that propagate robustly through subsequent computation.
+\para{Interpreting scientific foundation models.}
+On chemistry, \citet{pinto2025superior} find that intermediate layers of SMILES encoders outperform the final layer for downstream tasks, \citet{cohen2025unveiling} apply sparse autoencoders to \smi{} and steer generation by intervening on recovered features, and \citet{varadi2025circuits,muller2025uncovering,hu2024empirical} interpret attention heads, prediction circuits, and fragment-level features of other SMILES models. A parallel line of work targets biological foundation models: \citet{lu2026mechanisms} use counterfactual interventions on ESMFold latents to trace how the model builds spatial structure from sequence, \citet{goodfire2026evee} probe Evo~2 to generate interpretable predictions for millions of genetic variants, and \citet{goodfire2026alzheimers} use sparse autoencoders on an epigenetic foundation model to identify a novel Alzheimer's biomarker class. Building on this line of work, we pair layerwise linear probing with causal intervention on probe directions in \molm{} and \smi{}, which lets us separate information that is merely linearly recoverable from information the encoder actually uses during computation.
