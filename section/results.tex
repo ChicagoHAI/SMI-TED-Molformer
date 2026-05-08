@@ -8,7 +8,7 @@ We then probe the residual stream for chemical properties and observe that while
 \begin{figure}[t]
     \centering
     \includegraphics[width=\linewidth]{results_attention/smited_molformer_layerwise.png}
-    \caption{Caption here.}
+    \caption{Mean attention-distance correlation per layer for \molm and \smi. Both models exhibit low correlations with \smi performing marginally better across layers.}
     \label{fig:attention_line_plot}
 \end{figure}
 \input{results_attention/stratified}
@@ -17,7 +17,7 @@ We then probe the residual stream for chemical properties and observe that while
 
 \para{Stratified.} The strongest correlations are concentrated in short- and medium-range ($\leq4$\,\AA) atom pairs, while correlations for long-range interactions ($>4$\,\AA) remain close to zero in both models (Figure~\ref{fig:attention_stratified}). This indicates that geometry-sensitive heads are driven primarily by local interactions, with comparatively weak encoding of long-range molecular structure.
 
-\anita{acknowledge some negative corrs?}
+\anita{acknowledge some negative corrs?} \xiaoyan{Sure. You can described the results with more details like the numbers. And you can relate this to what \molm paper claimed. }
 
 \subsection{Encoding vs. Usage of Chemical Properties}
  We show  one surface-form property (aromaticity), and three contextual properties (ring membership, degree and chiral tag) here with other properties in Appendix~\ref{app:steer-all}
