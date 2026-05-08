@@ -5,12 +5,14 @@ We study how molecular language models represent chemical structure and properti
 We then probe the residual stream for chemical properties and observe that while \smi encodes contextual chemical properties more cleanly than \molm, and those representations are not just correlated with the target properties, but are used during model computation.
 
 \subsection{Attention-Distance Correlation}
+\input{results_attention/overall_line}
 \input{results_attention/stratified}
 
-\para{Both models exhibit non-uniform attention-distance correlations across layers and heads} (Figure??). This indicates that geometric information is represented selectively rather than uniformly across the transformer. The strongest correlations are concentrated in short- and medium-range ($\leq4$\,\AA) atom pairs, while correlations for long-range interactions ($>4$\,\AA) remain close to zero for most heads (Figure ??). This shows that geometry-sensitive heads are driven primarily by short- and medium-range interactions, with comparatively weak encoding of long-range structure.
+\para{Although both models exhibit positive mean correlations, all layer-wise mean Spearman correlations remain below $\rho \approx 0.3$ (Figure~\ref{fig:attention_line}).} This suggests that 3D geometry is not meaningfully encoded in attention patterns.
 
-\para{Differences between models.}
-SMI-TED shows broader and more consistently positive layer--head correlations, with several heads exceeding Spearman $\rho > 0.5$, suggesting stronger and more uniform encoding of spatial locality. In contrast, MoLFormer exhibits a more heterogeneous pattern with both strongly positive and negative heads, implying a more diverse allocation of attention across different interaction types.
+The strongest correlations are concentrated in short- and medium-range ($\leq4$\,\AA) atom pairs, while correlations for long-range interactions ($>4$\,\AA) remain close to zero for most heads (Figure~\ref{fig:attention_stratified}). This shows that geometry-sensitive heads are driven primarily by short- and medium-range interactions, with comparatively weak encoding of long-range structure.
+
+\para{SMI-TED shows broader and more consistently positive attention-distance correlations.} Several heads exceed Spearman $\rho > 0.5$, suggesting stronger and more uniform encoding of spatial locality. In contrast, MoLFormer exhibits a more heterogeneous pattern with both strongly positive and negative heads, implying a more diverse allocation of attention across different interaction types.
 
 \subsection{Encoding vs. Usage of Chemical Properties}
  We show  one surface-form property (aromaticity), and three contextual properties (ring membership, degree and chiral tag) here with other properties in Appendix~\ref{app:steer-all}
