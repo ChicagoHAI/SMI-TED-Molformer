@@ -18,11 +18,6 @@ extent does the learned representation reflect three-dimensional molecular geome
 These questions are important both for scientific understanding and for the
 trustworthy deployment of molecular AI in high-stakes domains. \xiaoyan{I think there are works about understanding the structures.}
 
-In this paper we conduct a systematic mechanistic interpretability study of two chemical language models, \molm and
-\smi. We focus on three experiments: (1) correlation
-between per-head attention weights and 3D interatomic distances across all layers
-and heads; (2) linear probing for chemical atom properties at each encoder layer;
-and (3) attention head ablation; (4) PCA; (5) LDA
+Prior interpretability analyses of chemical foundation models have mostly focused on attention-based correlations, the structure of final-layer embeddings, or correlations between chemical descriptors and model outputs. These analyses provide useful evidence that chemical information is present, but they do not show how such information is distributed across layers or whether it is functionally used during computation. In this paper, we take a step toward a more mechanistic account by studying two chemical language models, \molm and \smi, at the level of their internal representations.
 
-\xiaoyan{we can highlight the main contributions here.}
-[MORE TO BE ADDED]
+Concretely, we make three contributions. First, we perform a systematic attention--distance analysis across all layers and heads in both models, providing a more thorough test of whether attention aligns with 3D molecular geometry. Second, we use layerwise linear probes to track how atom-level chemical properties emerge across depth and to distinguish token-level features from contextual chemical information. Third, we apply causal intervention on probe directions to test whether decoded chemical features are merely accessible or are actively used by later computation. Together, these analyses allow us to compare not only what chemical information is represented, but how it is organized and when it becomes usable.
