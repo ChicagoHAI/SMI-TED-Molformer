@@ -1,0 +1,16 @@
+\section{Attention--Distance Analysis}
+\label{app:attention-overall}
+
+We test whether attention preferentially connects atoms that are spatially close in 3D. For every layer--head pair $(l,h)$, we compute the Spearman correlation between attention weights and inverse interatomic distance over all unique heavy-atom pairs $i<j$, then average these correlations across molecules. We sample 1000 SMILES at random from the QM9 training split and apply the same procedure to both models.
+
+\para{Attention extraction.}
+Both \molm{} and \smi{} use the FAVOR$+$ linear-attention approximation~\citep{choromanski2021rethinking}, in which the full attention matrix is never explicitly materialized. We instead capture the query and key tensors $\mathbf{q}_i^{(l,h)}$ and $\mathbf{k}_j^{(l,h)}$ at every layer $l$ and head $h$ via the model's event dispatcher, and reconstruct the effective attention weights post hoc as $A_{ij}^{(l,h)} \propto \langle \varphi(\mathbf{q}_i^{(l,h)}), \varphi(\mathbf{k}_j^{(l,h)}) \rangle$ followed by row-normalization. We then restrict to atom-token rows and columns, discarding non-atomic tokens.
+
+\para{Conformer generation.}
+Because SMILES strings encode molecular connectivity but not 3D geometry, we generate one low-energy conformer per molecule using RDKit's ETKDGv3 followed by MMFF94 geometry optimization, assigning each heavy atom a 3D coordinate $\mathbf{r}_i = (x_i, y_i, z_i)$.
+
+\para{Distance matrix and correlation.}
+From the optimized conformer we compute the pairwise Euclidean distance matrix $D_{ij} = \|\mathbf{r}_i - \mathbf{r}_j\|_2$, form the inverse-distance matrix $D^{-1}$, and for each $(l,h)$ pair compute the Spearman correlation between $\{A_{ij}^{(l,h)}\}$ and $\{1/D_{ij}\}$ over all unique pairs $i<j$. We additionally stratify the correlation by short-range ($\leq 2$\,\AA), medium-range ($2$--$4$\,\AA), and long-range ($>4$\,\AA) atom pairs to localize where any geometric signal sits.
+
+\para{Summary.}
+Consistent with the main text, both models show only weak overall alignment between attention and 3D geometry, with the strongest signal concentrated on short- and medium-range atom pairs.

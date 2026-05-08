@@ -1,52 +1,37 @@
-\begin{figure*}[t]
+\begin{figure}[t]
 \centering
-\begin{subfigure}[t]{0.24\textwidth}
+\begin{subfigure}[t]{0.48\linewidth}
     \centering
     \includegraphics[width=\linewidth]{results_steer_layers/by_layer_atom_type.pdf}
     \subcaption{atom type}
+    \label{fig:steer-all-atom-type}
 \end{subfigure}\hfill
-\begin{subfigure}[t]{0.24\textwidth}
+\begin{subfigure}[t]{0.48\linewidth}
     \centering
     \includegraphics[width=\linewidth]{results_steer_layers/by_layer_hybridization.pdf}
     \subcaption{hybridization}
-\end{subfigure}\hfill
-\begin{subfigure}[t]{0.24\textwidth}
-    \centering
-    \includegraphics[width=\linewidth]{results_steer_layers/by_layer_chiral_tag.pdf}
-    \subcaption{chiral tag}
-\end{subfigure}\hfill
-\begin{subfigure}[t]{0.24\textwidth}
-    \centering
-    \includegraphics[width=\linewidth]{results_steer_layers/by_layer_is_aromatic.pdf}
-    \subcaption{is aromatic}
+    \label{fig:steer-all-hybridization}
 \end{subfigure}
+
 \vspace{0.6em}
 
-\begin{subfigure}[t]{0.24\textwidth}
-    \centering
-    \includegraphics[width=\linewidth]{results_steer_layers/by_layer_is_in_ring.pdf}
-    \subcaption{is in ring}
-\end{subfigure}\hfill
-\begin{subfigure}[t]{0.24\textwidth}
-    \centering
-    \includegraphics[width=\linewidth]{results_steer_layers/by_layer_degree.pdf}
-    \subcaption{degree}
-\end{subfigure}\hfill
-\begin{subfigure}[t]{0.24\textwidth}
+\begin{subfigure}[t]{0.48\linewidth}
     \centering
     \includegraphics[width=\linewidth]{results_steer_layers/by_layer_formal_charge.pdf}
     \subcaption{formal charge}
+    \label{fig:steer-all-formal-charge}
 \end{subfigure}\hfill
-\begin{subfigure}[t]{0.24\textwidth}
+\begin{subfigure}[t]{0.48\linewidth}
     \centering
     \includegraphics[width=\linewidth]{results_steer_layers/by_layer_total_valence.pdf}
     \subcaption{total valence}
+    \label{fig:steer-all-total-valence}
 \end{subfigure}
 
 \vspace{0.4em}
 
-\centerline{\includegraphics[width=0.5\textwidth]{results_steer_layers/by_layer_legend.pdf}}
+\centerline{\includegraphics[width=0.5\linewidth]{results_steer_layers/by_layer_legend.pdf}}
 
-\caption{Intervention success rate as a function of the steer layer for all eight tasks. The three representative panels in the main text (Figure~\ref{fig:steer-layer}) generalize: aromaticity (top right) is the trivial encoded-and-used case in both models; the multi-class targets (atom type, hybridization, total valence) carry the probe-prototype geometry confound documented in the text; the remaining contextual tasks (ring membership, degree, formal charge, chiral tag) are the cleanest pretraining-difference cases, with \smi saturating at high success by mid-layers and \molm climbing gradually until the top of the encoder.}
+\caption{Intervention success rate as a function of the steer layer for the four properties not shown in the main text. Formal charge (\ref{fig:steer-all-formal-charge}) follows the same pretraining-difference shape seen in the main text: \smi saturates at high success by mid-layers, \molm climbs gradually until the top of the encoder. Atom type (\ref{fig:steer-all-atom-type}), hybridization (\ref{fig:steer-all-hybridization}), and total valence (\ref{fig:steer-all-total-valence}) are multi-class targets and the cycle-target success rate is partly governed by the probe-prototype layout; we therefore additionally inspect the moved-off-source rate (Appendix~\ref{app:steering}) to disentangle ``the intervention had effect'' from ``the intervention hit the cycle target''.}
 \label{fig:steer-layer-all}
-\end{figure*}
+\end{figure}
