@@ -13,14 +13,12 @@ We then probe the residual stream for chemical properties and observe that while
 \end{figure}
 \input{results_attention/stratified}
 
-\anita{will change paragraph names}
-
-\para{Overall.} Although both models exhibit consistently positive mean correlations, all layer-wise mean Spearman correlations remain below $\rho \approx 0.3$ (Figure~\ref{fig:attention_line_plot}), suggesting that 3D geometry is only weakly encoded in attention patterns for both models. 
+\para{Attention weakly reflects molecular geometry.} Although both models exhibit consistently positive mean correlations, all layer-wise mean Spearman correlations remain below $\rho \approx 0.3$ (Figure~\ref{fig:attention_line_plot}), suggesting that 3D geometry is only weakly encoded in attention patterns for both models. 
 
 Overall, \smi exhibits consistently stronger correlations than \molm. Notably, the gradual increase in correlation across layers in \smi suggests that geometric information emerges progressively through the transformer hierarchy rather than being encoded uniformly at early layers. In contrast, \molm peaks at layer 6 before declining in later layers, suggesting that later \molm layers may instead capture more abstract or non-spatial molecular relationships.
 
-\para{Stratified.}
-Across both short- and medium-range regimes, \smi exhibits consistently
+\para{Attention exhibits local but non-uniform geometry alignment.}
+Across both models, attention–distance correlations are strongest for short- and medium-range atomic interactions and weaken substantially at longer distances. \smi consistently exhibits consistently
 stronger geometric alignment than \molm.
 In the short-distance group, many \smi heads attain correlations between
 $0.40$ and $0.50$, whereas the maximum short-range correlation in
@@ -28,29 +26,19 @@ $0.40$ and $0.50$, whereas the maximum short-range correlation in
 Similarly, medium-distance correlations in \smi frequently fall between
 $0.35$ and $0.45$, while \molm medium-distance correlations peak at
 $0.29$.
-These results suggest that \smi preserves spatial locality beyond
-immediate atomic neighborhoods more consistently than \molm.
+These results suggest that \smi preserves spatial structure more consistently than \molm.
 
-Furthermore, several heads in both models exhibit negative
-correlations, indicating attention patterns that preferentially connect
-spatially distant atom pairs rather than nearby atoms. This suggests that some heads capture nonlocal chemical features not reflected by Euclidean distance alone, motivating the subsequent linear probing experiments to determine what information is represented in the hidden states themselves.
+Furthermore, several heads in both models exhibit negative correlations, suggesting that some heads capture chemical features not reflected by Euclidean distance alone. This motivates the following linear probing experiments examining what if chemical properties are encoded in the hidden states.
 
-\para{Compare to \molm.} Our findings contrast with prior claims that MoLFormer
-attention strongly aligns with interatomic proximity.
-Both approaches compare attention weights with inverse pairwise
-distances; however, the original work pools attention across heads
-before computing cosine similarity with the inverse-distance matrix.
-This aggregation may obscure substantial head-level heterogeneity.
-Moreover, cosine similarity measures global directional alignment,
-whereas our per-head Spearman analysis directly captures monotonic
-association between attention strength and spatial proximity.
-Our results instead suggest that geometric alignment is relatively
-weak, highly non-uniform across heads, and largely absent for
-long-range interactions.
+\para{Comparison with prior \molm findings.} Our findings contrast with prior claims in \molm that attention strongly aligns with interatomic proximity. While both analyses compare attention weights with inverse pairwise distances, the original work aggregates attention across heads before computing cosine similarity with the inverse-distance matrix, potentially obscuring substantial head-level heterogeneity. In addition, cosine similarity measures global directional alignment, whereas our per-head Spearman analysis directly measures monotonic association between attention strength and spatial proximity. Our results instead suggest that geometric alignment is weak, highly non-uniform across heads, and largely absent for long-range interactions~\cite{ross2022largescalechemicallanguagerepresentations}.
 
 \subsection{Encoding vs. Usage of Chemical Properties}
- We show  one surface-form property (aromaticity), and three contextual properties (ring membership, degree and chiral tag) here with other properties in Appendix~\ref{app:steer-all}
+ We show  one surface-level property (aromaticity), and three contextual properties (ring membership, degree and chiral tag) here with other properties in Appendix~\ref{app:steer-all}
 \input{figure/probe_acc}
+
+\leon{Why not address results for all 8 properties instead of putting half in the appendix? it would be a nice place to have a table maybe}
+
+\leon{maybe split into 4.2 Linear encoding of chemical properties 4.3 Functional usage of encoded properties}
 
 \anita{\molm ran some property prediction experiments on molecular-level properties. we run on atom-level properties (just a difference i wanted to note)}
 
@@ -70,4 +58,3 @@ The clearest cross-model gap appears on the contextual properties: ring membersh
 \para{The two models use contextual properties at different depths of the encoder.}
 The probe accuracy of aromaticity (Figure~\ref{fig:steer-is-aromatic}) is $1.0$ from the embedding layer, and intervention success remains $\approx 1.0$ at every depth in both models. The probe direction is therefore a usable channel throughout the network because the property is effectively encoded in the embedding itself.
 Ring membership (Figure~\ref{fig:steer-is-in-ring}), degree (Figure~\ref{fig:steer-degree}), and chiral tag (Figure~\ref{fig:steer-chiral-tag}) show a different pattern. In \smi, intervention success rises rapidly in the early layers and reaches $1.0$ by mid-depth, matching the probe's near-perfect accuracy. This suggests that the encoder begins using the probed direction as a stable computational channel from the middle layers onward. In contrast, \molm's intervention success increases gradually and only reaches $1.0$ near the top of the encoder, even though probe accuracy stays roughly constant (around $0.85$) across the middle layers. The probe therefore identifies a partially linearly accessible feature throughout \molm, but only the deepest layers transform it into a direction consistently used by downstream computation.
-
