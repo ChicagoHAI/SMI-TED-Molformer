@@ -7,7 +7,7 @@
 We run each experiment on both SMI-TED and MoLFormer. 
 
 \subsection{Attention-Distance Correlation Setup.} For each layer, head pair $(l, h) \in \{1,\ldots,12\}^2$, we extract attention weights $A_{ij}^{(l,h)}$ and compute a pairwise 3D Euclidean
-distance matrix $D_{ij}$ over \textbf{heavy} atom pairs, where $i, j \in \{1,\ldots,N\}$ index the $N$ heavy atoms of the molecule (more details in Appendix~\ref{app:attention-details}).  \xiaoyan{I think distance cannot be directly read from SMILES string which is different from other properties. We should probably say this somewhere.}
+distance matrix $D_{ij}$ over \textbf{heavy} atom pairs, where $i, j \in \{1,\ldots,N\}$ index the $N$ heavy atoms of the molecule (more details in Appendix~\ref{app:attention-details}).  \xiaoyan{I think distance cannot be directly read from SMILES string which is different from other properties. We should probably say this somewhere.} \anita{yes this is in Appendix A}
 
 For each molecule, we compute the
 Spearman correlation between $\{A_{ij}^{(l,h)}\}$ and
