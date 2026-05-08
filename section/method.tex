@@ -4,15 +4,19 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \xiaoyan{You can have the shared notation here and have 1 or 2 sentencens explain why we have those two experiments.}
 
+We run each experiment on both SMI-TED and MoLFormer. 
+
 \subsection{Attention-Distance Correlation Setup.} For each layer, head pair $(l, h) \in \{1,\ldots,12\}^2$, we extract attention weights $A_{ij}^{(l,h)}$ and compute a pairwise 3D Euclidean
-distance matrix $D_{ij}$ over \textbf{heavy} atom pairs $(i, j)$ (more details in Appendix~\ref{app:attention}). 
+distance matrix $D_{ij}$ over \textbf{heavy} atom pairs, where $i, j \in \{1,\ldots,N\}$ index the $N$ heavy atoms of the molecule (more details in Appendix~\ref{app:attention-details}).  \xiaoyan{I think distance cannot be directly read from SMILES string which is different from other properties. We should probably say this somewhere.}
 
 For each molecule, we compute the
 Spearman correlation between $\{A_{ij}^{(l,h)}\}$ and
-$\{1/D_{ij}\}$ over all unique atom pairs $i<j$. These per-molecule correlations are then averaged across the dataset (see . Furthermore, we stratify atom pairs by distance range:
+$\{1/D_{ij}\}$ over all unique atom pairs $i<j$. These per-molecule correlations are then averaged across the dataset (see Appendix~\ref{app:attention-overall}). 
+
+Furthermore, we stratify atom pairs by distance range:
 \emph{short} ($D_{ij}\le2$\,\AA),
 \emph{medium} ($2<D_{ij}\le4$\,\AA), and
-\emph{long} ($D_{ij}>4$\,\AA).
+\emph{long} ($D_{ij}>4$\,\AA). We repeat the correlation analysis within each group. 
 
 \anita{ how do you think i should phrase this? essentially for each (l, h) we compute correlation of each molecule and average over dataset.} \xiaoyan{I think the current way reads okay? What is \AA?}
 

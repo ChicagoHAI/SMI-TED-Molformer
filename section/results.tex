@@ -1,28 +1,33 @@
 \section{Results}
 \label{sec:results}
 
+We study how molecular language models represent chemical structure and properties at both the attention and representation level. Prior work on \molm suggested that attention captures spatial relationships between atoms, even though SMILES strings do not explicitly encode 3D geometry. Revisiting this claim, we find that attention patterns correlate only weakly with true interatomic distances.
+We then probe the residual stream for chemical properties and observe that while \smi encodes contextual chemical properties more cleanly than \molm, and those representations are not just correlated with the target properties, but are used during model computation.
+
 \subsection{Attention-Distance Correlation}
+\input{results_attention/stratified}
 
-\subsection{Linear Probing}
+\para{Both models exhibit non-uniform attention-distance correlations across layers and heads} (Figure??). This indicates that geometric information is represented selectively rather than uniformly across the transformer. The strongest correlations are concentrated in short- and medium-range ($\leq4$\,\AA) atom pairs, while correlations for long-range interactions ($>4$\,\AA) remain close to zero for most heads (Figure ??). This shows that geometry-sensitive heads are driven primarily by short- and medium-range interactions, with comparatively weak encoding of long-range structure.
 
-We organize the analysis around two complementary measurements that probe different aspects of the same representation. A linear probe asks whether a chemical property is \emph{encoded} as a readable signal in the residual stream---it locates information. A causal intervention along the probe's decision direction asks whether that direction is \emph{used} by the rest of the encoder---it tests function. We present probing in Section~\ref{sec:res-probe} and intervention in Section~\ref{sec:res-steer}. We focus the main text on four representative properties---aromaticity, ring membership, degree, and chiral tag---that span the qualitatively distinct regimes we observe; the remaining four tasks fall into one of these regimes (Appendix~\ref{app:probe-all}). \xiaoyan{TODO: This should be about attention and probing}
+\para{Differences between models.}
+SMI-TED shows broader and more consistently positive layer--head correlations, with several heads exceeding Spearman $\rho > 0.5$, suggesting stronger and more uniform encoding of spatial locality. In contrast, MoLFormer exhibits a more heterogeneous pattern with both strongly positive and negative heads, implying a more diverse allocation of attention across different interaction types.
 
-\subsubsection{Linear probing: what is encoded}
-\label{sec:res-probe}
+\subsection{Encoding vs. Usage of Chemical Properties}
+ We show  one surface-form property (aromaticity), and three contextual properties (ring membership, degree and chiral tag) here with other properties in Appendix~\ref{app:steer-all}
 \input{figure/probe_acc}
 
 \para{Surface-form properties are recoverable at the embedding in both models.}
-Aromaticity (Figure~\ref{fig:acc-is-aromatic}) is surface-form properties, where its label sits in the case of the letter (lowercase \texttt{c}, \texttt{n}, \texttt{o}, etc.\ for aromatic atoms). The probe results reach $100\%$ test accuracy at layer~$0$ in both \molm and \smi, indicating the properties are directly encoded in the embedding. Probe accuracy on surface-form properties reflects tokenizer design rather than learned representation, which aligns with how human reads the SMILE string. Other properties are shown in Appendix~\ref{app:probe-all}.
+Aromaticity (Figure~\ref{fig:acc-is-aromatic}) is surface-form properties, where can be read from the case of the letter (lowercase for aromatic atoms). The probe results reach $100\%$ test accuracy at embedding ($\ell$ = 0) in both \molm and \smi, indicating the properties are directly encoded in the embedding. Probe accuracy on surface-form properties reflects tokenizer design rather than learned representation, which aligns with how human reads the SMILE string. 
 
 \para{\smi encodes contextual properties more cleanly than \molm.}
-The clearest cross-model gap appears on the non-surface-form (\emph{contextual}) properties: ring membership, degree, and chiral tag (Figure~\ref{fig:acc-is-in-ring}, \ref{fig:acc-degree}, \ref{fig:acc-chiral-tag}). The same \texttt{C} token can belong to a ring or not, can have different degree, and can carry different stereochemistry depending on its surroundings, so a probe that achieves high accuracy on these tasks must read information that the encoder put there from context. \smi reaches near-perfect accuracy by mid-layers on all three (and on hybridization in Appendix~\ref{app:probe-all}), while \molm plateaus around $0.62 - 0.85$.  Due to the chemical dataset is naturally biased towards certain atom and structure, the fact that the probe accuracy of chiral tag of \molm is nearly the same as the majority baseline, it means that the model is not effectively learning to distinguish between different chiral states. The results are similar when we trained a non-linear probe (Appendix \xiaoyan{TODO}). 
+The clearest cross-model gap appears on the contextual properties: ring membership, degree, and chiral tag (Figure~\ref{fig:acc-is-in-ring}, \ref{fig:acc-degree}, \ref{fig:acc-chiral-tag}). The same \texttt{C} token can belong to a ring or not, can have different degree, and can carry different stereochemistry depending on its surroundings, so a probe that achieves high accuracy on these tasks must read information that the encoder put there from context. \smi reaches near-perfect accuracy by mid-layers on all three, while \molm plateaus around $0.62 - 0.85$.  Because chemical datasets are naturally imbalanced toward certain atoms and structures, \molm’s chiral-tag probe accuracy being close to the majority-class baseline suggests that the model is not effectively distinguishing different chiral states. This result remains unchanged when using a nonlinear probe (Appendix~\xiaoyan{TODO}).
 
-\subsubsection{Causal intervention: what is used}
-\label{sec:res-steer}
+% \subsubsection{Causal intervention: what is used}
+% \label{sec:res-steer}
 \input{figure/layer_steer}
 
 
 \para{The two models use contextual properties at different depths of the encoder.}
-\emph{Aromaticity} (Figure~\ref{fig:steer-is-aromatic}) gives the trivial baseline. Probe accuracy is $1.0$ from the embedding and intervention success is $\approx 1.0$ at every depth in both models. The probe direction is a usable channel everywhere because the property essentially \emph{is} the embedding.
-\emph{Ring membership} (Figure~\ref{fig:steer-is-in-ring}), \emph{degree} (Figure~\ref{fig:steer-degree}), and \emph{chiral tag} (Figure~\ref{fig:steer-chiral-tag}) all show the same pretraining-difference shape. \smi's success rate climbs rapidly through the early layers and saturates at $1.0$ by mid-depth, in lockstep with the probe reaching near-perfect accuracy: the probed direction is treated as a usable channel by the encoder from mid-layers onward. \molm's success rate, by contrast, climbs gradually and only reaches $1.0$ at the top of the encoder, even though its mid-layer probe accuracy (around $0.85$) is roughly constant across that range. The probe finds a partial linear correlate at every depth in \molm, but only the deepest layers give the encoder a direction that subsequent computation routes through.
+The probe accuracy of aromaticity (Figure~\ref{fig:steer-is-aromatic}) is $1.0$ from the embedding layer, and intervention success remains $\approx 1.0$ at every depth in both models. The probe direction is therefore a usable channel throughout the network because the property is effectively encoded in the embedding itself.
+Ring membership (Figure~\ref{fig:steer-is-in-ring}), degree (Figure~\ref{fig:steer-degree}), and chiral tag (Figure~\ref{fig:steer-chiral-tag}) show a different pattern. In \smi, intervention success rises rapidly in the early layers and reaches $1.0$ by mid-depth, matching the probe's near-perfect accuracy. This suggests that the encoder begins using the probed direction as a stable computational channel from the middle layers onward. In contrast, \molm's intervention success increases gradually and only reaches $1.0$ near the top of the encoder, even though probe accuracy stays roughly constant (around $0.85$) across the middle layers. The probe therefore identifies a partially linearly accessible feature throughout \molm, but only the deepest layers transform it into a direction consistently used by downstream computation.
 
