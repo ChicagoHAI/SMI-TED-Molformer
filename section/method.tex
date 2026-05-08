@@ -2,28 +2,17 @@
 \section{Methods}
 \label{sec:methods}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\xiaoyan{You can have the shared notation here and have 1 or 2 sentencens explain why we have those two experiments.}
 
-We run each experiment on both SMI-TED and MoLFormer. 
+Both \smi and \molm use 12-layer, 12-head transformer encoders with hidden dimension $d=768$. We run the same two experiments on both models to compare whether their learned representations encode molecular structure in similar ways. The attention-distance experiment tests whether attention heads directly track 3D spatial proximity, while the probing experiment tests whether atom-level chemical properties are linearly recoverable from hidden states.
 
-\subsection{Attention-Distance Correlation Setup.} For each layer, head pair $(l, h) \in \{1,\ldots,12\}^2$, we extract attention weights $A_{ij}^{(l,h)}$ and compute a pairwise 3D Euclidean
-distance matrix $D_{ij}$ over \textbf{heavy} atom pairs, where $i, j \in \{1,\ldots,N\}$ index the $N$ heavy atoms of the molecule. 
+Throughout, we use RDKit, an open-source cheminformatics toolkit, to compute molecular properties and generate 3D coordinates for atoms.
 
-Because SMILES strings alone do not encode distances, we generate a single low-energy conformer
-for each molecule using ETKDGv3 followed by MMFF94 geometry
-optimization. This assigns each heavy atom a 3-D coordinate
-$\mathbf{r}_i=(x_i,y_i,z_i)$.
+\subsection{Attention-Distance Correlation.}
+For each attention head in every layer, we compare attention weights between \textbf{heavy} (non-Hydrogen) atom pairs $A_{ij}^{(l,h)}$ to their corresponding 3D Euclidean distances $D_{ij}$ (measured in \AA).\footnote{Since SMILES strings do not contain explicit 3D geometric information, we use the RDKit cheminformatics toolkit to generate a 3D coordinate $\mathbf{r}_i=(x_i,y_i,z_i)$ using ETKDGv3 and MMFF94 (modules from RDKit). This procedure is used only as a preprocessing step; no additional model training is performed.}.
 
-For each molecule, we compute the
-Spearman correlation between $\{A_{ij}^{(l,h)}\}$ and
-$\{1/D_{ij}\}$ over all unique atom pairs $i<j$. These per-molecule correlations are then averaged across the dataset (see Appendix~\ref{app:attention-overall}). 
+For each molecule, we measure the Spearman correlation between attention strength and inverse distance, where larger values correspond to closer atom pairs. Correlations are computed separately for every layer-head pair and averaged across the dataset.
 
-Furthermore, we stratify atom pairs by distance range:
-\emph{short} ($D_{ij}\le2$\,\AA),
-\emph{medium} ($2<D_{ij}\le4$\,\AA), and
-\emph{long} ($D_{ij}>4$\,\AA). We repeat the correlation analysis within each group. 
-
-\anita{ how do you think i should phrase this? essentially for each (l, h) we compute correlation of each molecule and average over dataset.} \xiaoyan{I think the current way reads okay? What is \AA?}
+We additionally stratify atom pairs by distance into \emph{short} ($D_{ij}\le2$\,\AA), \emph{medium} ($2<D_{ij}\le4$\,\AA), and \emph{long} ($D_{ij}>4$\,\AA) interactions, and repeat the analysis within each group.
 
 \subsection{Probing Chemical Properties}
 \para{Probing.}
