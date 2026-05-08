@@ -13,15 +13,46 @@ We then probe the residual stream for chemical properties and observe that while
 \end{figure}
 \input{results_attention/stratified}
 
-\para{Overall.} Although both models exhibit consistently positive mean correlations, all layer-wise mean Spearman correlations remain below $\rho \approx 0.3$ (Figure~\ref{fig:attention_line_plot}), suggesting that 3D geometry is only weakly encoded in attention patterns for both models. Overall, \smi exhibits consistently stronger correlations than \molm. Notably, the gradual increase in correlation across layers in \smi suggests that geometric information emerges progressively through the transformer hierarchy rather than being encoded uniformly at early layers. In contrast, \molm peaks around layer 6 before declining in later layers
+\anita{will change paragraph names}
 
-\para{Stratified.} The strongest correlations are concentrated in short- and medium-range ($\leq4$\,\AA) atom pairs, while correlations for long-range interactions ($>4$\,\AA) remain close to zero in both models (Figure~\ref{fig:attention_stratified}). This indicates that geometry-sensitive heads are driven primarily by local interactions, with comparatively weak encoding of long-range molecular structure.
+\para{Overall.} Although both models exhibit consistently positive mean correlations, all layer-wise mean Spearman correlations remain below $\rho \approx 0.3$ (Figure~\ref{fig:attention_line_plot}), suggesting that 3D geometry is only weakly encoded in attention patterns for both models. 
 
-\anita{acknowledge some negative corrs?} \xiaoyan{Sure. You can described the results with more details like the numbers. And you can relate this to what \molm paper claimed. }
+Overall, \smi exhibits consistently stronger correlations than \molm. Notably, the gradual increase in correlation across layers in \smi suggests that geometric information emerges progressively through the transformer hierarchy rather than being encoded uniformly at early layers. In contrast, \molm peaks at layer 6 before declining in later layers, suggesting that later \molm layers may instead capture more abstract or non-spatial molecular relationships.
+
+\para{Stratified.}
+Across both short- and medium-range regimes, \smi exhibits consistently
+stronger geometric alignment than \molm.
+In the short-distance group, many \smi heads attain correlations between
+$0.40$ and $0.50$, whereas the maximum short-range correlation in
+\molm is $0.25$.
+Similarly, medium-distance correlations in \smi frequently fall between
+$0.35$ and $0.45$, while \molm medium-distance correlations peak at
+$0.29$.
+These results suggest that \smi preserves spatial locality beyond
+immediate atomic neighborhoods more consistently than \molm.
+
+Furthermore, several heads in both models exhibit negative
+correlations, indicating attention patterns that preferentially connect
+spatially distant atom pairs rather than nearby atoms. This suggests that some heads capture nonlocal chemical features not reflected by Euclidean distance alone, motivating the subsequent linear probing experiments to determine what information is represented in the hidden states themselves.
+
+\para{Compare to \molm.} Our findings contrast with prior claims that MoLFormer
+attention strongly aligns with interatomic proximity.
+Both approaches compare attention weights with inverse pairwise
+distances; however, the original work pools attention across heads
+before computing cosine similarity with the inverse-distance matrix.
+This aggregation may obscure substantial head-level heterogeneity.
+Moreover, cosine similarity measures global directional alignment,
+whereas our per-head Spearman analysis directly captures monotonic
+association between attention strength and spatial proximity.
+Our results instead suggest that geometric alignment is relatively
+weak, highly non-uniform across heads, and largely absent for
+long-range interactions.
 
 \subsection{Encoding vs. Usage of Chemical Properties}
  We show  one surface-form property (aromaticity), and three contextual properties (ring membership, degree and chiral tag) here with other properties in Appendix~\ref{app:steer-all}
 \input{figure/probe_acc}
+
+\anita{\molm ran some property prediction experiments on molecular-level properties. we run on atom-level properties (just a difference i wanted to note)}
 
 \para{Surface-form properties are recoverable at the embedding in both models.}
 Aromaticity (Figure~\ref{fig:acc-is-aromatic}) is surface-form properties, where can be read from the case of the letter (lowercase for aromatic atoms). The probe results reach $100\%$ test accuracy at embedding ($\ell$ = 0) in both \molm and \smi, indicating the properties are directly encoded in the embedding. Probe accuracy on surface-form properties reflects tokenizer design rather than learned representation, which aligns with how human reads the SMILE string. 

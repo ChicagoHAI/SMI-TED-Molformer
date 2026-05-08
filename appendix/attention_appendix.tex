@@ -1,5 +1,7 @@
-\section{Attention--Distance Analysis}
-\label{app:attention-overall}
+\section{Attention--Distance Details}
+\label{app:attention-appendix}
+
+NOTE: we didn’t consider molecule if it has less than 3 heavy atoms
 
 We test whether attention preferentially connects atoms that are spatially close in 3D. For every layer--head pair $(l,h)$, we compute the Spearman correlation between attention weights and inverse interatomic distance over all unique heavy-atom pairs $i<j$, then average these correlations across molecules. We sample 1000 SMILES at random from the QM9 training split and apply the same procedure to both models.
 

@@ -16,8 +16,8 @@ where $\varphi$ is a random feature map that enables linear-time attention and a
 \end{equation}
 and reconstructs the token sequence from $\mathbf{z}$ through a symmetric immersion followed by a language decoder layer. The encoder contains $47$M parameters and the decoder $242$M parameters, totalling $289$M parameters. This bottleneck imposes an additional constraint on the latent space: it must retain enough information to support both downstream prediction and recovery of the input SMILES, which makes \smi{} a useful comparison point for studying whether different pretraining designs lead to different internal organization of chemical information.
 
-\para{Why this comparison is informative.}
-The two models are similar enough at the architectural level that layerwise comparisons are meaningful: same depth, same hidden size, same attention mechanism, and SMILES-only inputs without explicit geometric supervision. They differ in how molecular information is pooled and constrained during pretraining, which lets us attribute representational differences to pretraining choices rather than architectural ones.
+% \para{Why this comparison is informative.}
+% The two models are similar enough at the architectural level that layerwise comparisons are meaningful: same depth, same hidden size, same attention mechanism, and SMILES-only inputs without explicit geometric supervision. They differ in how molecular information is pooled and constrained during pretraining, which lets us attribute representational differences to pretraining choices rather than architectural ones.
 
 \subsection{Atomic Properties Derived from RDKit}
 \label{appendix:properties}
@@ -25,17 +25,17 @@ The two models are similar enough at the architectural level that layerwise comp
 Each atom is annotated with eight RDKit-derived properties, falling into three categories of how readable they are from the SMILES string itself.
 
 \para{Surface-form (directly recoverable from SMILES tokenization).}
-\textbf{Atom type} is the chemical element identity of the atom. Element symbols are explicitly encoded in the SMILES string and assigned distinct token ids by the tokenizer, so atom type is directly readable.
-\textbf{Aromaticity} indicates whether an atom belongs to an aromatic system; aromatic atoms are written with lowercase letters in SMILES notation, so aromaticity is also surface-form.
+\emph{Atom type} is the chemical element identity of the atom. Element symbols are explicitly encoded in the SMILES string and assigned distinct token ids by the tokenizer, so atom type is directly readable.
+\emph{Aromaticity} indicates whether an atom belongs to an aromatic system; aromatic atoms are written with lowercase letters in SMILES notation, so aromaticity is also surface-form.
 
 \para{Partially signaled by SMILES.}
-\textbf{Formal charge} is the net charge assigned to an atom relative to its neutral state. It is sometimes indicated by bracket notation, but consistent labels require RDKit standardization across representations.
-\textbf{Chiral tag} encodes the stereochemical configuration at a chiral center. SMILES partially signals chirality with \texttt{@} and \texttt{@@}, but canonical assignment requires stereochemical perception by RDKit.
+\emph{Formal charge} is the net charge assigned to an atom relative to its neutral state. It is sometimes indicated by bracket notation, but consistent labels require RDKit standardization across representations.
+\emph{Chiral tag} encodes the stereochemical configuration at a chiral center. SMILES partially signals chirality with \texttt{@} and \texttt{@@}, but canonical assignment requires stereochemical perception by RDKit.
 
 \para{Contextual (require cheminformatics computation).}
-\textbf{Hybridization} describes the orbital hybridization state of an atom; aromatic atoms implicitly carry sp$^2$ character via lowercase notation, but hybridization for non-aromatic atoms requires full valence resolution.
-\textbf{Degree} is the number of directly bonded heavy-atom neighbors of each atom; while bond connectivity is encoded in SMILES, degree must be computed by parsing the molecular graph since implicit hydrogens complicate direct reading.
-\textbf{Total valence} counts all bonds formed by an atom, including bonds to implicit hydrogens, which SMILES typically suppresses.
-\textbf{Ring membership} indicates whether an atom belongs to one or more rings; SMILES encodes ring closures through numbered bond descriptors, but assigning ring membership to each atom (especially in fused or bridged polycyclic systems) requires explicit ring perception.
+\emph{Hybridization} describes the orbital hybridization state of an atom; aromatic atoms implicitly carry sp$^2$ character via lowercase notation, but hybridization for non-aromatic atoms requires full valence resolution.
+\emph{Degree} is the number of directly bonded heavy-atom neighbors of each atom; while bond connectivity is encoded in SMILES, degree must be computed by parsing the molecular graph since implicit hydrogens complicate direct reading.
+\emph{Total valence} counts all bonds formed by an atom, including bonds to implicit hydrogens, which SMILES typically suppresses.
+\emph{Ring membership} indicates whether an atom belongs to one or more rings; SMILES encodes ring closures through numbered bond descriptors, but assigning ring membership to each atom (especially in fused or bridged polycyclic systems) requires explicit ring perception.
 
 The five contextual properties (and partially-signaled formal charge and chiral tag) cannot be determined from raw SMILES alone, and therefore serve as the most informative targets for evaluating how much structural information a model has learned beyond its tokenization. We additionally consider one geometric property, \textbf{interatomic distance}, in our attention analysis (Appendix~\ref{app:attention-overall}); this property is not encoded in the SMILES string at all and must be estimated from a generated 3D conformer.
