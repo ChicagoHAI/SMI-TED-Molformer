@@ -32,7 +32,7 @@ Furthermore, several heads in both models exhibit negative correlations, suggest
 
 \para{Comparison with prior \molm findings.} Our findings contrast with prior claims in \molm that attention strongly aligns with interatomic proximity. While both analyses compare attention weights with inverse pairwise distances, the original work aggregates attention across heads before computing cosine similarity with the inverse-distance matrix, potentially obscuring substantial head-level heterogeneity. In addition, cosine similarity measures global directional alignment, whereas our per-head Spearman analysis directly measures monotonic association between attention strength and spatial proximity. Our results instead suggest that geometric alignment is weak, highly non-uniform across heads, and largely absent for long-range interactions~\cite{ross2022largescalechemicallanguagerepresentations}.
 
-\subsection{Linear recoverability of chemical properties across depth}
+\subsection{Linear probing of chemical properties}
 \label{sec:res-probe}
 \input{figure/probe_acc}
 
@@ -45,7 +45,7 @@ The probe accuracy for atom type (Figure~\ref{fig:acc-atom-type}) and aromaticit
 The clearest cross-model gap appears on the contextual properties: ring membership, degree, chiral tag, hybridization, and total valence (Figure~\ref{fig:acc-is-in-ring}, \ref{fig:acc-degree}, \ref{fig:acc-chiral-tag}, \ref{fig:acc-hybridization}, \ref{fig:acc-total-valence}). The same \texttt{C} token can belong to a ring or not, can have different degree, and can carry different stereochemistry depending on its surroundings, so a probe that achieves high accuracy on these tasks must read information that the encoder put there from context.
 \smi reaches near-perfect accuracy ($\geq 0.95$) on all five contextual properties. Total valence and chiral tag are already above this threshold at the embedding. Other properties also converge in the early layers. \molm's curves climb less steeply and plateau several points below. Ring membership levels off around $0.82$, hybridization around $0.84$, total valence near $0.97$, and degree at $\sim 0.58$ (only $0.15$ above the $0.43$ majority baseline). \molm's probe accuracy stays at $\sim 0.79$ across all 13 layers for chiral tag, essentially the $0.795$ majority-class baseline. This suggests the possible differences between how those two models encode contextual chemical properties.
 
-\subsection{Functional use across depth}
+\subsection{Causal intervention on chemical properties}
 \label{sec:res-steer}
 \input{figure/layer_steer}
 
