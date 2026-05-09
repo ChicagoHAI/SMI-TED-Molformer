@@ -4,7 +4,7 @@
 We test whether attention preferentially connects atoms that are spatially close in 3D. For each layer--head pair $(l,h)$, we compute the Spearman correlation between attention weights and inverse interatomic distance across all unique heavy-atom pairs $i<j$, then average these correlations across molecules. We randomly sample 1000 SMILES strings from the QM9 training split, excluding molecules with fewer than three heavy atoms, and apply the same procedure to both models.
 
 \para{Attention extraction.}
-Both \molm{} and \smi{} use the FAVOR$+$ linear-attention approximation~\citep{choromanski2021rethinking}, which does not explicitly materialize the full attention matrix. We therefore capture the query and key tensors $\mathbf{q}_i^{(l,h)}$ and $\mathbf{k}_j^{(l,h)}$ at every layer and head, reconstruct the effective attention weights post hoc as
+Both \molm and \smi use the FAVOR$+$ linear-attention approximation~\citep{choromanski2021rethinking}, which does not explicitly materialize the full attention matrix. We therefore capture the query and key tensors $\mathbf{q}_i^{(l,h)}$ and $\mathbf{k}_j^{(l,h)}$ at every layer and head, reconstruct the effective attention weights post hoc as
 $
 A_{ij}^{(l,h)} \propto \langle \varphi(\mathbf{q}_i^{(l,h)}), \varphi(\mathbf{k}_j^{(l,h)}) \rangle,
 $

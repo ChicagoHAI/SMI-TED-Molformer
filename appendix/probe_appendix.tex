@@ -3,8 +3,6 @@
 \label{app:mlp}
 \label{app:random}
 \label{app:steering}
-\label{app:probe-all}
-\label{app:steer-all}
 
 \subsection{Probe training and data}
 
@@ -18,22 +16,11 @@
 
 \para{Reproducibility shims.} The public \molm release predates \texttt{transformers}~$\geq 5$, so we add three monkey-patches at load time: a stub for the removed \texttt{transformers.onnx} subpackage, a stub for \texttt{find\_pruneable\_heads\_and\_indices}, and a re-injection of \texttt{PreTrainedModel.get\_head\_mask}. We also force a recomputation of the rotary embedding's non-persistent \texttt{cos\_cached}/\texttt{sin\_cached} buffers after model loading and set \texttt{deterministic\_eval=True} on every FAVOR$+$ feature map. \smi's \texttt{pytorch-fast-transformers} dependency does not build under our environment; we reimplement its encoder in pure PyTorch ($\sim 150$ lines) and load the released checkpoint with a strict assertion that only the post-encoder \texttt{LayerNorm} (which our probes do not read) is allowed to be unmatched.
 
-\subsection{Probe controls and macro-F1}
-
-\input{figure/probe_f1}
+\subsection{Probe controls}
 
 \para{MLP-probe control.} To test whether the linear probe is bottlenecked by lack of nonlinearity, we additionally train a 2-layer MLP $\mathrm{MLPProbe}(\mathbf{x}) = \mathbf{W}_2\,\mathrm{ReLU}(\mathbf{W}_1\,\mathbf{x} + \mathbf{b}_1) + \mathbf{b}_2$ with hidden size $128$ on the real hidden states. Across all eight tasks and both models, the MLP probe improves test accuracy over the linear probe by at most $0.03$ in absolute terms, with most improvements being $\leq 0.01$. The largest gain is on \molm hybridization ($+0.03$ accuracy / $+0.07$ macro-F1 at layer $5$); on surface-form tasks the gap is essentially zero. We conclude that the chemical properties under study are approximately linearly accessible from the residual stream, and the conclusions drawn from the linear probe are not artifacts of probe capacity.
 
 \para{Random-features control.} For each (task, layer) pair we additionally train an identical linear probe on a Gaussian random-features matrix $\mathbf{X}_{\mathrm{rand}} \in \mathbb{R}^{N \times d}$ with i.i.d.\ entries $\mathcal{N}(0, 1)$, sampled once per script run and reused for every (task, layer). The same molecule-level split, class encoding, and standardization are applied; the probe sees the same atom labels but uninformative inputs. Test macro-F1 falls within $1$--$2$ percentage points of $1/C_\tau$ (the chance level under macro-F1 when always predicting the majority class) for every task on both models, confirming that the real-features probe accuracy reflects encoder structure rather than overfitting capacity in the linear head.
-
-\para{Macro-F1.} Figure~\ref{fig:f1} reports per-layer macro-F1 for six tasks for which it is informative (we omit atom type and formal charge, where the majority baseline is at or near $1.0$ and macro-F1 saturates). Under macro-F1 the \smi vs.\ \molm gap on contextual tasks is more pronounced than under accuracy, because macro-F1 penalizes probes that effectively reproduce the majority-vote baseline on imbalanced classes.
-
-\subsection{Probe accuracy and steering for the remaining four properties}
-
-The main text shows aromaticity, ring membership, degree, and chiral tag. Figure~\ref{fig:acc-all} and Figure~\ref{fig:steer-layer-all} report linear-probe accuracy and intervention success rate for the four remaining properties: atom type, hybridization, formal charge, and total valence. Atom type and formal charge are surface-form (or near-surface-form, since the majority baseline of formal charge is already $0.97$): both models reach the same near-saturation accuracy at the embedding and layer-sweep success curves are dominated by probe-prototype geometry on the multi-class cycle target. Hybridization and total valence are contextual; \smi reaches near-perfect probe accuracy and intervention success by mid-layers, while \molm plateaus several points below on probing and lifts only at the deepest layers under intervention---the same shape we see for the contextual tasks in the main text.
-
-\input{appendix/probe_acc_all}
-\input{appendix/layer_steer_all}
 
 \subsection{Causal-steering setup}
 
@@ -45,7 +32,7 @@ where $\mathbf{W}_{c}$ is the layer-$\ell$ probe's row for class $c$ and $\bolds
 
 \para{Forward hook and intervention.} The hook is registered on the module that produces $\mathbf{h}^{(\ell)}$ (\texttt{model.encoder.layer[$\ell$-1]} for \molm, \texttt{encoder.blocks.layers[$\ell$-1]} for \smi), modifies that layer's output by adding the per-position steering tensor at atom-token positions only, and is removed in a \texttt{try/finally} block immediately after the post-intervention forward pass. The pre- and post-intervention forward passes are run with \texttt{output\_hidden\_states=True} to capture the residual stream at every depth.
 
-\para{Layer sweep.} The main-text Figure~\ref{fig:steer-layer} and the appendix Figure~\ref{fig:steer-layer-all} sweep $\ell \in \{1, \ldots, 12\}$ and report, per (task, model, $\ell$), the intervention success rate at the best-performing $\alpha$ on held-out molecules. This best-$\alpha$-per-layer summary serves as a single scalar diagnostic of whether the encoder routes through the layer-$\ell$ probe direction.
+\para{Layer sweep.} Figure~\ref{fig:steer-layer} sweeps $\ell \in \{1, \ldots, 12\}$ for each task and reports the intervention success rate at the best-performing $\alpha$ on held-out molecules. This best-$\alpha$-per-layer summary serves as a single scalar diagnostic of whether the encoder routes through the layer-$\ell$ probe direction.
 
 \para{Metrics.} \emph{Intervention success rate} (or \emph{flip-to-target rate}) is the fraction of atom-token positions whose layer-$12$ probe prediction equals the intended target $c'$ after the intervention. We additionally track \emph{moved-off-source rate} (the fraction whose post-intervention layer-$12$ prediction differs from the source class $c$) so that, for multi-class tasks, ``the steering had effect'' can be disentangled from ``the steering hit the cycle target''---a distinction that matters when the cycle direction $\mathbf{W}_{c'} - \mathbf{W}_{c}$ does not point at the cycle-target centroid in the probe's prototype layout.
 
@@ -80,6 +67,6 @@ best @ L10 & $1.00$ & $1.00$ & $1.00$ & $0.91$ & $0.99$ \\
 best @ L12 & $1.00$ & $1.00$ & $1.00$ & $0.59$ & $1.00$ \\
 \bottomrule
 \end{tabular}
-\caption{Layer-$11$ intervention success rate in \smi{} for the five properties that show the L11 dip. Each cell is the flip-to-target rate at the layer-$12$ probe readout under a single-layer-$11$ steering perturbation of magnitude $\alpha$. The $\alpha$ range is chosen to span below to well above the residual-stream scale: the steering vector $\mathbf{v} = (\mathbf{W}_{c'}-\mathbf{W}_{c})/\boldsymbol{\sigma}$ has Euclidean norm of order $\|\mathbf{v}\| \approx 8.8$, comparable to the per-token residual-stream norm, so $\alpha \in [1, 3]$ is approximately scale-matched and $\alpha \ge 30$ is in the regime where the next block's LayerNorm washes out further increases in magnitude. Fine-grid values $\alpha \le 1.0$ are computed on a $100$-molecule subset of held-out QM9; wide-grid values $\alpha \ge 3$ are computed on the main-sweep $200$-molecule subset. Reference rows show the best success rate over the wide $\alpha$ grid at the adjacent layers L10 and L12. None of the L11 values approach the L10 / L12 ceilings at any tested magnitude, ruling out a magnitude artifact.}
+\caption{Intervention success rate at \smi layer~$11$ for the five properties that show the L11 dip, swept over a fine $\alpha$ grid in $[0,1]$ and a wide grid up to $\alpha = 300$. The $\alpha$ range covers below to well above the residual-stream scale, since the steering vector $\mathbf{v} = (\mathbf{W}_{c'}-\mathbf{W}_{c})/\boldsymbol{\sigma}$ has Euclidean norm $\|\mathbf{v}\| \approx 8.8$ and $\alpha \ge 30$ already enters the regime where the next block's LayerNorm washes out further magnitude increases. The success rate stays well below the L10 / L12 ceiling at every $\alpha$ tested, so the dip is not an artifact of the perturbation scale.}
 \label{app:l11-table}
 \end{table}
