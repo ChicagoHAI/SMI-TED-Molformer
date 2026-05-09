@@ -1,8 +1,7 @@
 \section{Results}
 \label{sec:results}
 
-We study how molecular language models represent chemical structure and properties at both the attention and representation level. Prior work on \molm suggested that attention captures spatial relationships between atoms, even though SMILES strings do not explicitly encode 3D geometry. Revisiting this claim, we find that attention patterns correlate only weakly with true interatomic distances.
-We then probe the residual stream for chemical properties and observe that while \smi encodes contextual chemical properties more cleanly than \molm, and those representations are not just correlated with the target properties, but are used during model computation.
+We study how molecular language models represent chemical structure at both the attention and hidden-state level. Revisiting prior claims that \molm attention captures spatial relationships between atoms, we find that attention correlates only weakly with true interatomic distance. Probing further reveals that \smi encodes contextual chemical properties more strongly than \molm, and that these representations are actively used during computation rather than merely correlated with the target properties.
 
 \subsection{Attention-Distance Correlation}
 \begin{figure}[t]
@@ -36,7 +35,7 @@ Furthermore, several heads in both models exhibit negative correlations, suggest
  We show  one surface-level property (aromaticity), and three contextual properties (ring membership, degree and chiral tag) here with other properties in Appendix~\ref{app:steer-all}
 \input{figure/probe_acc}
 
-\leon{Why not address results for all 8 properties instead of putting half in the appendix? it would be a nice place to have a table maybe}
+\anita{since we have more space, maybe we can add all 8 property plots?}
 
 \leon{maybe split into 4.2 Linear encoding of chemical properties 4.3 Functional usage of encoded properties}
 

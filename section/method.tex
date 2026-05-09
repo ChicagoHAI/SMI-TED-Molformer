@@ -5,11 +5,9 @@
 
 Both \molm~\citep{ross2022largescalechemicallanguagerepresentations} and \smi~\citep{soares2024smi} use 12-layer, 12-head transformer encoders with hidden dimension $d=768$. We run the same two experiments on both models to compare whether their learned representations encode molecular structure in similar ways. The attention-distance experiment tests whether attention heads directly track 3D spatial proximity, while the probing experiment tests whether atom-level chemical properties are linearly recoverable from hidden states. Throughout, we use RDKit~\cite{rdkit} to access molecular properties and generate 3D conformers.
 
-\subsection{Attention-Distance Correlation.} For each layer, head pair, we compare attention weights between \textbf{heavy} (non-Hydrogen) atom pairs $A_{ij}^{(l,h)}$ to their corresponding 3D Euclidean distances $D_{ij}$ (measured in \AA).\footnote{Since SMILES strings do not contain explicit 3D geometric information, we use ETKDGv3 and MMFF94 (modules from RDKit) to generate a 3D coordinate $\mathbf{r}_i=(x_i,y_i,z_i)$ for each atom. This procedure is used only as a preprocessing step; no additional model training is performed.}.
+\subsection{Attention-Distance Correlation.} For each layer--head pair, we compare attention weights between \textbf{heavy} (non-Hydrogen) atom pairs $A_{ij}^{(l,h)}$ to their corresponding 3D Euclidean distances $D_{ij}$ (measured in \AA).\footnote{Since SMILES strings do not contain explicit 3D geometric information, we use ETKDGv3 and MMFF94 (modules from RDKit) to generate a 3D coordinate $\mathbf{r}_i=(x_i,y_i,z_i)$ for each atom. This procedure is used only as a preprocessing step; no additional model training is performed.} We compute the Spearman correlation $\rho$ between attention weights and inverse distance separately for every molecule, then average the resulting correlations across the sample. More detailed setup is in Appendix~\ref{app:attention-appendix}.
 
-For each layer-head pair, we compute the Spearman correlation $\rho$ between attention weights and inverse distance separately for every molecule, then average the resulting correlations across the sample. More detailed setup is in Appendix~\ref{app:attention-appendix}.
-
-We additionally stratify atom pairs by distance into \emph{short} ($D_{ij}\le2$\,\AA), \emph{medium} ($2<D_{ij}\le4$\,\AA), and \emph{long} ($D_{ij}>4$\,\AA) interactions, and repeat the analysis within each group.
+We additionally stratify atom pairs by distance into \emph{short} ($D_{ij}\le2$\,\AA), \emph{medium} ($2<D_{ij}\le4$\,\AA), and \emph{long} ($D_{ij}>4$\,\AA), and repeat the analysis within each group.
 
 \subsection{Probing Chemical Properties}
 \para{Probing.}
