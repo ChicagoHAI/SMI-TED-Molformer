@@ -27,7 +27,7 @@ $0.35$ and $0.45$, while \molm medium-distance correlations peak at
 $0.29$.
 These results suggest that \smi preserves spatial structure more consistently than \molm.
 
-Furthermore, several heads in both models exhibit negative correlations, suggesting that some heads capture chemical features not reflected by Euclidean distance alone, which may indicate that the models associate distance in the way human chemists do.
+Furthermore, several heads in both models exhibit negative correlations, suggesting that some heads capture chemical features not reflected by Euclidean distance alone, which may indicate that the models do not associate distance in the way human chemists do.
 %This motivates the following linear probing experiments examining what if chemical properties are encoded in the hidden states.
 
 \para{Comparison with prior \molm findings.} Our findings contrast with prior claims in \molm that attention strongly aligns with interatomic proximity. While both analyses compare attention weights with inverse pairwise distances, the original work aggregates attention across heads before computing cosine similarity with the inverse-distance matrix, potentially obscuring substantial head-level heterogeneity. In addition, cosine similarity measures global directional alignment, whereas our per-head Spearman analysis directly measures monotonic association between attention strength and spatial proximity. Our results instead suggest that geometric alignment is weak, highly non-uniform across heads, and largely absent for long-range interactions~\cite{ross2022largescalechemicallanguagerepresentations}.

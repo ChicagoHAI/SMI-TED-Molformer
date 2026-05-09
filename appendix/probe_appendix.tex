@@ -42,7 +42,7 @@ where $\mathbf{W}_{c}$ is the layer-$\ell$ probe's row for class $c$ and $\bolds
 
 To rule out the possibility that the layer-$11$ dip in \smi's intervention curves (Section~\ref{sec:res-steer}) reflects a poorly chosen perturbation magnitude rather than a property of the encoder, we re-ran the layer-$11$ intervention on the five properties that show the dip (the four contextual properties plus formal charge) with a finer $\alpha$ grid in $[0, 1]$, in addition to the wide grid up to $\alpha = 300$ already used in the main sweep. Table~\ref{app:l11-table} reports the per-$\alpha$ flip-to-target rate at the layer-$12$ readout. At every $\alpha$ in the combined grid, the success rate at layer~$11$ saturates well below the L10 / L12 ceiling, so the dip is not a sweep artifact.
 
-\begin{table}[t]
+\begin{table}[h]
 \centering
 \small
 \begin{tabular}{lccccc}
@@ -67,6 +67,6 @@ best @ L10 & $1.00$ & $1.00$ & $1.00$ & $0.91$ & $0.99$ \\
 best @ L12 & $1.00$ & $1.00$ & $1.00$ & $0.59$ & $1.00$ \\
 \bottomrule
 \end{tabular}
-\caption{Intervention success rate at \smi layer~$11$ for the five properties that show the L11 dip, swept over a fine $\alpha$ grid in $[0,1]$ and a wide grid up to $\alpha = 300$. The $\alpha$ range covers below to well above the residual-stream scale, since the steering vector $\mathbf{v} = (\mathbf{W}_{c'}-\mathbf{W}_{c})/\boldsymbol{\sigma}$ has Euclidean norm $\|\mathbf{v}\| \approx 8.8$ and $\alpha \ge 30$ already enters the regime where the next block's LayerNorm washes out further magnitude increases. The success rate stays well below the L10 / L12 ceiling at every $\alpha$ tested, so the dip is not an artifact of the perturbation scale.}
+\caption{Intervention success rate at \smi layer~$11$ for the five properties that show the L11 dip.}
 \label{app:l11-table}
 \end{table}
