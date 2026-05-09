@@ -17,8 +17,7 @@ We study how molecular language models represent chemical structure at both the 
 Overall, \smi exhibits consistently stronger correlations than \molm. Notably, the gradual increase in correlation across layers in \smi suggests that geometric information emerges progressively through the transformer hierarchy rather than being encoded uniformly at early layers. In contrast, \molm peaks at layer 6 before declining in later layers, suggesting that later \molm layers may instead capture more abstract or non-spatial molecular relationships.
 
 \para{Attention exhibits local but non-uniform geometry alignment.}
-Across both models, attention–distance correlations are strongest for short- and medium-range atomic interactions and weaken substantially at longer distances. \smi consistently exhibits consistently
-stronger geometric alignment than \molm (Figure~\ref{fig:attention_stratified}).
+Across both models, attention–distance correlations are strongest for short- and medium-range atomic interactions and weaken at longer distances. \smi exhibits consistently stronger geometric alignment than \molm (Figure~\ref{fig:attention_stratified}).
 In the short-distance group, many \smi heads attain correlations between
 $0.40$ and $0.50$, whereas the maximum short-range correlation in
 \molm is $0.25$.
@@ -36,14 +35,14 @@ Furthermore, several heads in both models exhibit negative correlations, suggest
 \label{sec:res-probe}
 \input{figure/probe_acc}
 
-\para{Surface-form properties are recoverable at the embedding in both models.}
-The probe accuracy for atom type (Figure~\ref{fig:acc-atom-type}) and aromaticity (Figure~\ref{fig:acc-is-aromatic}), two surface-form properties, is $1.0$ at the embedding layer ($\ell{=}0$) in both \molm and \smi and stays flat across all 13 layers, indicating these properties are directly encoded in the embedding and unchanged by any encoder computation.
+\para{Surface-level properties are recoverable at the embedding in both models.}
+The probe accuracy for atom type (Figure~\ref{fig:acc-atom-type}) and aromaticity (Figure~\ref{fig:acc-is-aromatic}), two surface-level properties, is $1.0$ at the embedding layer ($\ell{=}0$) in both \molm and \smi and stays flat across all 13 layers, indicating these properties are directly encoded in the embedding and unchanged by any encoder computation.
 
 %Formal charge (Figure~\ref{fig:acc-formal-charge}) sits operationally in the same regime: the QM9 majority class is already $0.97$ and probe accuracy stays in the $0.97$--$1.00$ band from the embedding onward in both models. Unlike the other two, however, this saturation is driven by dataset imbalance rather than tokenizer access.
 
 \para{\smi encodes contextual properties more cleanly than \molm.}
 The clearest cross-model gap appears on the contextual properties: ring membership, degree, chiral tag, hybridization, and total valence (Figure~\ref{fig:acc-is-in-ring}, \ref{fig:acc-degree}, \ref{fig:acc-chiral-tag}, \ref{fig:acc-hybridization}, \ref{fig:acc-total-valence}). The same \texttt{C} token can belong to a ring or not, can have different degree, and can carry different stereochemistry depending on its surroundings, so a probe that achieves high accuracy on these tasks must read information that the encoder put there from context.
-\smi reaches near-perfect accuracy ($\geq 0.95$) on all five contextual properties. Total valence and chiral tag are already above this threshold at the embedding. Other properties also converge in the early layers. \molm's curves climb less steeply and plateau several points below. Ring membership levels off around $0.82$, hybridization around $0.84$, total valence near $0.97$, and degree at $\sim 0.58$ (only $0.15$ above the $0.43$ majority baseline). \molm's probe accuracy stays at $\sim 0.79$ across all 13 layers for chiral tag, essentially the $0.795$ majority-class baseline. This suggests the possible differences between how those two models encode contextual chemical properties.
+\smi reaches near-perfect accuracy ($\geq 0.95$) on all five contextual properties. Total valence and chiral tag are already above this threshold at the embedding. Other properties also converge in the early layers. \molm's curves climb less steeply and plateau several points below. Ring membership levels off around $0.82$, hybridization around $0.84$, total valence near $0.97$, and degree at $\sim 0.58$ (only $0.15$ above the $0.43$ majority baseline). \molm's probe accuracy stays at $\sim 0.79$ across all 13 layers for chiral tag, essentially the $0.795$ majority-class baseline. This suggests differences in how the two models encode contextual chemical properties.
 
 \subsection{Causal intervention on chemical properties}
 \label{sec:res-steer}
