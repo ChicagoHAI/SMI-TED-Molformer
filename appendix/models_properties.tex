@@ -1,20 +1,20 @@
 \section{Models and Atomic Properties}
 \label{appendix:architecture}
 
-\para{\molm{}.}
-\molm{}~\citep{ross2022largescalechemicallanguagerepresentations} is an encoder-only transformer that applies rotary linear attention to SMILES token sequences and produces both token-level hidden states and a pooled molecular representation. The public release we study has a 12-layer encoder with hidden size 768 and 12 attention heads, and a vocabulary of $2{,}362$ tokens. The encoder is pretrained on roughly 1.1 billion molecules from PubChem~\citep{kim2023pubchem} and ZINC~\citep{sterling2015zinc} under a masked language modeling objective, with no explicit supervision on geometry or molecular properties. Each token is embedded in a $768$-dimensional space, and sequences are capped at $202$ tokens, which accommodates over $99.4\%$ of molecules in the training corpus.
-\molm{} replaces standard softmax attention with a positive-feature-map approximation~\citep{choromanski2021rethinking}, combined with rotary position encodings $R_m$ applied to queries and keys at each position $m$. The resulting attention at position $m$ is
+\para{\molm.}
+\molm~\citep{ross2022largescalechemicallanguagerepresentations} is an encoder-only transformer that applies rotary linear attention to SMILES token sequences and produces both token-level hidden states and a pooled molecular representation. The public release we study has a 12-layer encoder with hidden size 768 and 12 attention heads, and a vocabulary of $2{,}362$ tokens. The encoder is pretrained on roughly 1.1 billion molecules from PubChem~\citep{kim2023pubchem} and ZINC~\citep{sterling2015zinc} under a masked language modeling objective, with no explicit supervision on geometry or molecular properties. Each token is embedded in a $768$-dimensional space, and sequences are capped at $202$ tokens, which accommodates over $99.4\%$ of molecules in the training corpus.
+\molm replaces standard softmax attention with a positive-feature-map approximation~\citep{choromanski2021rethinking}, combined with rotary position encodings $R_m$ applied to queries and keys at each position $m$. The resulting attention at position $m$ is
 \begin{equation}
 \text{Attention}_m(Q, K, V) = \frac{\sum_{n=1}^{N} \langle \varphi(R_m q_m),\, \varphi(R_n k_n) \rangle\, v_n}{\sum_{n=1}^{N} \langle \varphi(R_m q_m),\, \varphi(R_n k_n) \rangle},
 \end{equation}
 where $\varphi$ is a random feature map that enables linear-time attention and avoids the quadratic cost of standard softmax attention.
 
-\para{\smi{}.}
-\smi{}~\citep{soares2024smi} uses the same general encoder backbone (12 layers, $768$-dimensional hidden states, 12 attention heads, rotary linear attention) but adds an encoder--decoder bottleneck trained jointly with token-level prediction and sequence reconstruction. The encoder maps token embeddings $\mathbf{x}$ into a compressed latent representation $\mathbf{z}$ via
+\para{\smi.}
+\smi~\citep{soares2024smi} uses the same general encoder backbone (12 layers, $768$-dimensional hidden states, 12 attention heads, rotary linear attention) but adds an encoder--decoder bottleneck trained jointly with token-level prediction and sequence reconstruction. The encoder maps token embeddings $\mathbf{x}$ into a compressed latent representation $\mathbf{z}$ via
 \begin{equation}
 \mathbf{z} = \mathrm{LayerNorm}\!\left(\mathrm{GELU}\!\left(\mathbf{x} W_1 + b_1\right)\right) W_2,
 \end{equation}
-and reconstructs the token sequence from $\mathbf{z}$ through a symmetric immersion followed by a language decoder layer. The encoder contains $47$M parameters and the decoder $242$M parameters, totalling $289$M parameters. This bottleneck imposes an additional constraint on the latent space: it must retain enough information to support both downstream prediction and recovery of the input SMILES, which makes \smi{} a useful comparison point for studying whether different pretraining designs lead to different internal organization of chemical information.
+and reconstructs the token sequence from $\mathbf{z}$ through a symmetric immersion followed by a language decoder layer. The encoder contains $47$M parameters and the decoder $242$M parameters, totalling $289$M parameters. This bottleneck imposes an additional constraint on the latent space: it must retain enough information to support both downstream prediction and recovery of the input SMILES, which makes \smi a useful comparison point for studying whether different pretraining designs lead to different internal organization of chemical information.
 
 % \para{Why this comparison is informative.}
 % The two models are similar enough at the architectural level that layerwise comparisons are meaningful: same depth, same hidden size, same attention mechanism, and SMILES-only inputs without explicit geometric supervision. They differ in how molecular information is pooled and constrained during pretraining, which lets us attribute representational differences to pretraining choices rather than architectural ones.
