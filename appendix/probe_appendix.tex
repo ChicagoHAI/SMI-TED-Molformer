@@ -50,3 +50,36 @@ where $\mathbf{W}_{c}$ is the layer-$\ell$ probe's row for class $c$ and $\bolds
 \para{Metrics.} \emph{Intervention success rate} (or \emph{flip-to-target rate}) is the fraction of atom-token positions whose layer-$12$ probe prediction equals the intended target $c'$ after the intervention. We additionally track \emph{moved-off-source rate} (the fraction whose post-intervention layer-$12$ prediction differs from the source class $c$) so that, for multi-class tasks, ``the steering had effect'' can be disentangled from ``the steering hit the cycle target''---a distinction that matters when the cycle direction $\mathbf{W}_{c'} - \mathbf{W}_{c}$ does not point at the cycle-target centroid in the probe's prototype layout.
 
 \para{Sample size and hyperparameters.} Each task is evaluated on $200$ molecules ($\sim 1.7$k atom-token positions; $197$ molecules and $1{,}719$ atom-token positions survive token-atom alignment) drawn from the QM9 partition not used for probe training. The $\alpha$ grid is $\{0, 1, 3, 10, 30, 100, 300\}$; the smallest non-zero $\alpha$ that maximizes success rate is reported per layer.
+
+\subsection{Layer-11 \texorpdfstring{$\alpha$}{alpha}-grid sweep in \smi}
+
+To rule out the possibility that the layer-$11$ dip in \smi's intervention curves (Section~\ref{sec:res-steer}) reflects a poorly chosen perturbation magnitude rather than a property of the encoder, we re-ran the layer-$11$ intervention on the five properties that show the dip (the four contextual properties plus formal charge) with a finer $\alpha$ grid in $[0, 1]$, in addition to the wide grid up to $\alpha = 300$ already used in the main sweep. Table~\ref{app:l11-table} reports the per-$\alpha$ flip-to-target rate at the layer-$12$ readout. At every $\alpha$ in the combined grid, the success rate at layer~$11$ saturates well below the L10 / L12 ceiling, so the dip is not a sweep artifact.
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{lccccc}
+\toprule
+$\alpha$ & \texttt{is\_in\_ring} & \texttt{degree} & \texttt{chiral\_tag} & \texttt{hybridization} & \texttt{formal\_charge} \\
+\midrule
+$0.0$ & $0.00$ & $0.00$ & $0.02$ & $0.00$ & $0.00$ \\
+$0.1$ & $0.00$ & $0.11$ & $0.10$ & $0.00$ & $0.00$ \\
+$0.2$ & $0.00$ & $0.19$ & $0.14$ & $0.00$ & $0.00$ \\
+$0.3$ & $0.00$ & $0.21$ & $0.20$ & $0.00$ & $0.00$ \\
+$0.5$ & $0.00$ & $0.25$ & $0.20$ & $0.01$ & $0.02$ \\
+$0.7$ & $0.00$ & $0.25$ & $0.20$ & $0.01$ & $0.03$ \\
+$1.0$ & $0.00$ & $0.24$ & $0.20$ & $0.00$ & $0.03$ \\
+$3$ & $0.00$ & $0.13$ & $0.21$ & $0.01$ & $0.03$ \\
+$10$ & $0.00$ & $0.07$ & $0.21$ & $0.01$ & $0.03$ \\
+$30$ & $0.00$ & $0.06$ & $0.21$ & $0.01$ & $0.03$ \\
+$100$ & $0.00$ & $0.06$ & $0.21$ & $0.01$ & $0.03$ \\
+$300$ & $0.00$ & $0.06$ & $0.21$ & $0.01$ & $0.03$ \\
+\midrule
+\textbf{best @ L11} & $\mathbf{0.00}$ & $\mathbf{0.25}$ & $\mathbf{0.21}$ & $\mathbf{0.01}$ & $\mathbf{0.03}$ \\
+best @ L10 & $1.00$ & $1.00$ & $1.00$ & $0.91$ & $0.99$ \\
+best @ L12 & $1.00$ & $1.00$ & $1.00$ & $0.59$ & $1.00$ \\
+\bottomrule
+\end{tabular}
+\caption{Layer-$11$ intervention success rate in \smi{} for the five properties that show the L11 dip. Each cell is the flip-to-target rate at the layer-$12$ probe readout under a single-layer-$11$ steering perturbation of magnitude $\alpha$. The $\alpha$ range is chosen to span below to well above the residual-stream scale: the steering vector $\mathbf{v} = (\mathbf{W}_{c'}-\mathbf{W}_{c})/\boldsymbol{\sigma}$ has Euclidean norm of order $\|\mathbf{v}\| \approx 8.8$, comparable to the per-token residual-stream norm, so $\alpha \in [1, 3]$ is approximately scale-matched and $\alpha \ge 30$ is in the regime where the next block's LayerNorm washes out further increases in magnitude. Fine-grid values $\alpha \le 1.0$ are computed on a $100$-molecule subset of held-out QM9; wide-grid values $\alpha \ge 3$ are computed on the main-sweep $200$-molecule subset. Reference rows show the best success rate over the wide $\alpha$ grid at the adjacent layers L10 and L12. None of the L11 values approach the L10 / L12 ceilings at any tested magnitude, ruling out a magnitude artifact.}
+\label{app:l11-table}
+\end{table}

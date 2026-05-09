@@ -27,21 +27,14 @@ $0.35$ and $0.45$, while \molm medium-distance correlations peak at
 $0.29$.
 These results suggest that \smi preserves spatial structure more consistently than \molm.
 
-Furthermore, several heads in both models exhibit negative correlations, suggesting that some heads capture chemical features not reflected by Euclidean distance alone. This motivates the following linear probing experiments examining what if chemical properties are encoded in the hidden states.
+Furthermore, several heads in both models exhibit negative correlations, suggesting that some heads capture chemical features not reflected by Euclidean distance alone, which may indicate that the models associate distance in the way human chemists do.
+%This motivates the following linear probing experiments examining what if chemical properties are encoded in the hidden states.
 
 \para{Comparison with prior \molm findings.} Our findings contrast with prior claims in \molm that attention strongly aligns with interatomic proximity. While both analyses compare attention weights with inverse pairwise distances, the original work aggregates attention across heads before computing cosine similarity with the inverse-distance matrix, potentially obscuring substantial head-level heterogeneity. In addition, cosine similarity measures global directional alignment, whereas our per-head Spearman analysis directly measures monotonic association between attention strength and spatial proximity. Our results instead suggest that geometric alignment is weak, highly non-uniform across heads, and largely absent for long-range interactions~\cite{ross2022largescalechemicallanguagerepresentations}.
 
 \subsection{Linear encoding of chemical properties}
 \label{sec:res-probe}
 \input{figure/probe_acc}
-
-\anita{since we have more space, maybe we can add all 8 property plots?}
-
-\leon{maybe split into 4.2 Linear encoding of chemical properties 4.3 Functional usage of encoded properties}
-
-\anita{\molm ran some property prediction experiments on molecular-level properties. we run on atom-level properties (just a difference i wanted to note)}
-
-\anita{should we mention something about the biased nature of QM9 dataset?}
 
 \para{Surface-form properties are recoverable at the embedding in both models.}
 Atom type (Figure~\ref{fig:acc-atom-type}) and aromaticity (Figure~\ref{fig:acc-is-aromatic}) are surface-form: each element symbol is a distinct token, and aromaticity can be read from the case of the letter (lowercase for aromatic atoms). Probe accuracy is $1.0$ at the embedding layer ($\ell{=}0$) in both \molm and \smi and stays flat across all 13 layers, indicating these properties are directly encoded in the embedding and unchanged by any encoder computation. Formal charge (Figure~\ref{fig:acc-formal-charge}) sits operationally in the same regime: the QM9 majority class is already $0.97$ and probe accuracy stays in the $0.97$--$1.00$ band from the embedding onward in both models. Unlike the other two, however, this saturation is driven by dataset imbalance rather than tokenizer access.
@@ -59,3 +52,10 @@ The clearest cross-model gap appears on the contextual properties: ring membersh
 Aromaticity (Figure~\ref{fig:steer-is-aromatic}) and formal charge (Figure~\ref{fig:steer-formal-charge}) show intervention success $\approx 1.0$ at every depth in both models, mirroring their flat probe-accuracy curves: when the property is essentially recoverable at the embedding, the probe direction is a usable channel at every depth.
 
 The contextual properties show a clearly cross-model pattern. In \smi, intervention success rises rapidly through the early encoder and saturates by mid-depth: ring membership (Figure~\ref{fig:steer-is-in-ring}) reaches $1.0$ by layer~$6$, chiral tag (Figure~\ref{fig:steer-chiral-tag}) by layer~$6$, and degree (Figure~\ref{fig:steer-degree}) by layer~$7$. In \molm, the same three properties climb gradually across the entire encoder and only cross $1.0$ at the top: ring membership at layer~$9$, chiral tag at layer~$11$, and degree only at layer~$12$. \molm therefore routes through the probed direction only at its deepest layers, even though its linear probe already reaches its plateau accuracy by the middle layers (Section~\ref{sec:res-probe}). The two measurements thus disagree about \emph{when} a contextual property becomes computationally available --- a dissociation between linear recoverability and causal use that we return to in the Concluding Discussion (Section~\ref{sec:res-disc}).
+
+In \smi, the success curves additionally show a sharp dip at layer~$11$ across multiple properties. We verified this is not an artifact of the perturbation magnitude: sweeping $\alpha$ across both a fine grid in $[0, 1]$ and a wide grid up to $\alpha = 300$ at layer~$11$ never recovers the L10 / L12 ceiling for ring membership, degree, chiral tag, hybridization, or formal charge (Table~\ref{app:l11-table}). We return to this layer-specific failure of probe-direction steering in Section~\ref{sec:res-disc}.
+
+\para{Linear decodability and functional use are distinct empirical questions.}
+The layer sweeps show that probe accuracy alone is not a reliable indicator of when the encoder actually uses a property during computation. In \molm, several contextual properties are already partially decodable in mid-layers, yet intervention succeeds only much later, near the top of the encoder. Probe accuracy therefore measures \emph{availability}, whereas intervention tests whether the corresponding direction is already part of a computational channel used by later layers. Taken together, the probe and intervention results show that contextual chemical information can be linearly accessible before it becomes functionally usable.
+
+Across contextual properties, the strongest cross-model difference is not simply whether chemistry is present, but when it becomes functionally usable. \smi reaches near-ceiling probe and intervention performance by mid-depth on ring membership, degree, and chiral tag, whereas \molm improves more gradually and often only becomes fully steerable near the top of the encoder. More broadly, the attention and probing results point to the same conclusion: geometry leaves only a weak signature in attention, but contextual chemical information is nevertheless recoverable from hidden states and, in some cases, causally usable by later computation.
